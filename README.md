@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Trivet
 
 ## 1. Overview
@@ -118,3 +119,6 @@ submitting: Work, Health, Leisure, and the Add entry sheet at minimum.
 
 This project was built with AI assistance. See `AI-USAGE.md` for the
 tool, prompts, and what was kept or changed.
+=======
+# Trivet
+>>>>>>> 5f8b95a7e4f20d87f54106512e3bbaf30ab37b72
