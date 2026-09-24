@@ -94,8 +94,16 @@ management package.
 
 ## 6. Screenshots
 
-Not yet captured — the app hasn't been run visually (see Known issues). Add one screenshot per screen here before
-submitting: Work, Health, Leisure, and the Add entry sheet at minimum.
+Running on the phone frame (`flutter run`), light theme, per Design
+System v2:
+
+| Work | Health |
+| --- | --- |
+| ![Work screen](screenshots/work.png) | ![Health screen](screenshots/health.png) |
+
+| Leisure | Home (placeholder) |
+| --- | --- |
+| ![Leisure screen](screenshots/leisure.png) | ![Home placeholder](screenshots/home.png) |
 
 ## 7. Known issues and next steps
 
