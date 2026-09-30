@@ -13,9 +13,6 @@ import 'media_detail_screen.dart';
 class LeisureScreen extends StatefulWidget {
   const LeisureScreen({super.key, this.initialFilter});
 
-  /// Lets the Dashboard's "SEE ALL" open this screen pre-filtered
-  /// (the mockup's own spec: "opens 04 Leisure filtered to In progress").
-  /// Defaults to Want when not given, same as opening the tab normally.
   final MediaStatus? initialFilter;
 
   @override
@@ -89,8 +86,6 @@ class _LeisureScreenState extends State<LeisureScreen> {
         ),
       ),
     );
-    // The detail screen can also log time against this entry; reload so
-    // the list's "hours this week" reflects anything logged there.
     final logs = await _logStore.load();
     if (mounted) setState(() => _logs = logs);
   }
@@ -102,7 +97,8 @@ class _LeisureScreenState extends State<LeisureScreen> {
     }
 
     final filtered = _entries.where((e) => e.status == _filter).toList();
-    final weekTotal = _entries.fold<double>(0, (sum, e) => sum + _hoursThisWeek(e.id));
+    final weekTotal =
+        _entries.fold<double>(0, (sum, e) => sum + _hoursThisWeek(e.id));
     final theme = Theme.of(context);
 
     return Scaffold(
@@ -125,7 +121,9 @@ class _LeisureScreenState extends State<LeisureScreen> {
                 showSelectedIcon: false,
                 segments: const [
                   ButtonSegment(value: MediaStatus.want, label: Text('Want')),
-                  ButtonSegment(value: MediaStatus.inProgress, label: Text('In progress')),
+                  ButtonSegment(
+                      value: MediaStatus.inProgress,
+                      label: Text('In progress')),
                   ButtonSegment(value: MediaStatus.done, label: Text('Done')),
                 ],
                 selected: {_filter},
@@ -144,7 +142,8 @@ class _LeisureScreenState extends State<LeisureScreen> {
                       )
                     : ListView.separated(
                         itemCount: filtered.length,
-                        separatorBuilder: (_, __) => const SizedBox(height: AppSpacing.sm),
+                        separatorBuilder: (_, __) =>
+                            const SizedBox(height: AppSpacing.sm),
                         itemBuilder: (context, i) {
                           final e = filtered[i];
                           final hours = _hoursThisWeek(e.id);

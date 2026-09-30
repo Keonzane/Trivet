@@ -14,9 +14,6 @@ class MediaCard extends StatelessWidget {
 
   final MediaEntry entry;
 
-  /// Secondary line shown on the right when there's no [rating] yet —
-  /// used here for "hours this week". A future detail screen may pass a
-  /// real completion percentage instead.
   final String? progress;
   final int? rating;
   final VoidCallback onTap;
@@ -37,7 +34,8 @@ class MediaCard extends StatelessWidget {
               height: 56,
               decoration: BoxDecoration(
                 color: accent,
-                borderRadius: const BorderRadius.horizontal(left: Radius.circular(12)),
+                borderRadius:
+                    const BorderRadius.horizontal(left: Radius.circular(12)),
               ),
             ),
             Expanded(
@@ -85,7 +83,8 @@ class _Stars extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         for (var i = 1; i <= 5; i++)
-          Icon(i <= rating ? Icons.star : Icons.star_border, size: 16, color: color),
+          Icon(i <= rating ? Icons.star : Icons.star_border,
+              size: 16, color: color),
       ],
     );
   }

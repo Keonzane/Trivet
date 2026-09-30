@@ -2,12 +2,6 @@ import 'package:flutter/material.dart';
 
 import '../theme.dart';
 
-/// The one shape every "Add entry" sheet uses. The caller owns the pillar
-/// picker and the field set for that pillar; this widget draws the
-/// chrome: a drag handle, a title (tinted by [pillar] once one is picked),
-/// the fields, and Cancel/Save. [pillar] is nullable and [onSave] can be
-/// null to support the unified sheet's "no pillar chosen yet" state,
-/// where Save has nothing to save and is simply disabled.
 class EntryModal extends StatelessWidget {
   const EntryModal({
     super.key,
@@ -27,7 +21,9 @@ class EntryModal extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final accent = pillar == null ? theme.colorScheme.outlineVariant : context.pillars.of(pillar!);
+    final accent = pillar == null
+        ? theme.colorScheme.outlineVariant
+        : context.pillars.of(pillar!);
     return Padding(
       padding: EdgeInsets.only(
         left: AppSpacing.md,
@@ -56,9 +52,11 @@ class EntryModal extends StatelessWidget {
                 width: 10,
                 height: 10,
                 margin: const EdgeInsets.only(right: AppSpacing.sm),
-                decoration: BoxDecoration(color: accent, shape: BoxShape.circle),
+                decoration:
+                    BoxDecoration(color: accent, shape: BoxShape.circle),
               ),
-              Expanded(child: Text(title, style: theme.textTheme.headlineSmall)),
+              Expanded(
+                  child: Text(title, style: theme.textTheme.headlineSmall)),
               IconButton(
                 icon: const Icon(Icons.close),
                 onPressed: onCancel,
@@ -74,11 +72,13 @@ class EntryModal extends StatelessWidget {
           Row(
             children: [
               Expanded(
-                child: OutlinedButton(onPressed: onCancel, child: const Text('Cancel')),
+                child: OutlinedButton(
+                    onPressed: onCancel, child: const Text('Cancel')),
               ),
               const SizedBox(width: AppSpacing.sm),
               Expanded(
-                child: FilledButton(onPressed: onSave, child: const Text('Save')),
+                child:
+                    FilledButton(onPressed: onSave, child: const Text('Save')),
               ),
             ],
           ),
@@ -88,9 +88,6 @@ class EntryModal extends StatelessWidget {
   }
 }
 
-/// A labelled wrapper — the design system's mockup revision that gives
-/// every field a 12 dp caption above it. Labels live here, not on
-/// AppTextField, so AppTextField stays reusable outside Add entry.
 class LabelledField extends StatelessWidget {
   const LabelledField({super.key, required this.label, required this.child});
 

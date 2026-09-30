@@ -7,23 +7,12 @@ import '../theme.dart';
 import '../widgets/add_entry_sheet.dart';
 import '../widgets/pillar_button.dart';
 
-/// The screen the mockup calls for when a MediaCard is tapped: "opens the
-/// title's detail, where rating and progress are set." "Progress" here
-/// means status (Want / In progress / Done) and a star rating — the two
-/// fields the proposal's own data table lists for MediaEntry. The mockup's
-/// card copy also shows a numeric percent-complete ("62% complete"), but
-/// that isn't tracked anywhere in the proposal's saved data, so this
-/// screen doesn't invent a field for it — it shows total hours logged
-/// instead, which the model already supports.
 class MediaDetailScreen extends StatefulWidget {
-  const MediaDetailScreen({super.key, required this.entry, required this.onUpdate});
+  const MediaDetailScreen(
+      {super.key, required this.entry, required this.onUpdate});
 
   final MediaEntry entry;
 
-  /// Called whenever status or rating changes, so the caller (Leisure or
-  /// Dashboard) can update its own list and persist it — this screen
-  /// doesn't own the MediaEntry list itself, same as every other screen
-  /// only owning the store it directly reads.
   final ValueChanged<MediaEntry> onUpdate;
 
   @override
@@ -115,9 +104,13 @@ class _MediaDetailScreenState extends State<MediaDetailScreen> {
                     SegmentedButton<MediaStatus>(
                       showSelectedIcon: false,
                       segments: const [
-                        ButtonSegment(value: MediaStatus.want, label: Text('Want')),
-                        ButtonSegment(value: MediaStatus.inProgress, label: Text('In progress')),
-                        ButtonSegment(value: MediaStatus.done, label: Text('Done')),
+                        ButtonSegment(
+                            value: MediaStatus.want, label: Text('Want')),
+                        ButtonSegment(
+                            value: MediaStatus.inProgress,
+                            label: Text('In progress')),
+                        ButtonSegment(
+                            value: MediaStatus.done, label: Text('Done')),
                       ],
                       selected: {_entry.status},
                       onSelectionChanged: (s) => _setStatus(s.first),
@@ -135,7 +128,9 @@ class _MediaDetailScreenState extends State<MediaDetailScreen> {
                           IconButton(
                             padding: EdgeInsets.zero,
                             icon: Icon(
-                              i <= (_entry.rating ?? 0) ? Icons.star : Icons.star_border,
+                              i <= (_entry.rating ?? 0)
+                                  ? Icons.star
+                                  : Icons.star_border,
                               color: accent,
                             ),
                             onPressed: () => _setRating(i),

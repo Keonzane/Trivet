@@ -1,24 +1,33 @@
 import 'package:flutter/material.dart';
 
 const _destinations = [
-  NavigationDestination(icon: Icon(Icons.home_outlined), selectedIcon: Icon(Icons.home), label: 'Home'),
-  NavigationDestination(icon: Icon(Icons.work_outline), selectedIcon: Icon(Icons.work), label: 'Work'),
-  NavigationDestination(icon: Icon(Icons.favorite_outline), selectedIcon: Icon(Icons.favorite), label: 'Health'),
-  NavigationDestination(icon: Icon(Icons.menu_book_outlined), selectedIcon: Icon(Icons.menu_book), label: 'Leisure'),
+  NavigationDestination(
+      icon: Icon(Icons.home_outlined),
+      selectedIcon: Icon(Icons.home),
+      label: 'Home'),
+  NavigationDestination(
+      icon: Icon(Icons.work_outline),
+      selectedIcon: Icon(Icons.work),
+      label: 'Work'),
+  NavigationDestination(
+      icon: Icon(Icons.favorite_outline),
+      selectedIcon: Icon(Icons.favorite),
+      label: 'Health'),
+  NavigationDestination(
+      icon: Icon(Icons.menu_book_outlined),
+      selectedIcon: Icon(Icons.menu_book),
+      label: 'Leisure'),
 ];
 
 class AppNav extends StatelessWidget {
-  const AppNav({super.key, required this.selectedIndex, required this.onSelected});
+  const AppNav(
+      {super.key, required this.selectedIndex, required this.onSelected});
 
   final int selectedIndex;
   final ValueChanged<int> onSelected;
 
   @override
   Widget build(BuildContext context) {
-    // Phone-vs-desktop layout lives in the screen that hosts AppNav, but
-    // AppNav is the one component allowed to swap its own widget, since it
-    // has to become a NavigationBar or a NavigationRail at the same 900 dp
-    // breakpoint used everywhere else.
     final isWide = MediaQuery.sizeOf(context).width >= 900;
     if (isWide) {
       return NavigationRail(

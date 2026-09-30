@@ -55,13 +55,14 @@ class _HealthScreenState extends State<HealthScreen> {
   }
 
   int get _streakDays {
-    final days = _workouts.map((w) => DateTime(w.date.year, w.date.month, w.date.day)).toSet();
+    final days = _workouts
+        .map((w) => DateTime(w.date.year, w.date.month, w.date.day))
+        .toSet();
     var streak = 0;
     var cursor = DateTime.now();
     cursor = DateTime(cursor.year, cursor.month, cursor.day);
-    // A rest day today doesn't break a streak that continued through
-    // yesterday; only count backward while consecutive days are logged.
-    if (!days.contains(cursor)) cursor = cursor.subtract(const Duration(days: 1));
+    if (!days.contains(cursor))
+      cursor = cursor.subtract(const Duration(days: 1));
     while (days.contains(cursor)) {
       streak++;
       cursor = cursor.subtract(const Duration(days: 1));
@@ -79,7 +80,8 @@ class _HealthScreenState extends State<HealthScreen> {
     final week = WeekRange.containing(DateTime.now());
     final weekWorkouts = _workouts.where((w) => week.contains(w.date)).toList()
       ..sort((a, b) => b.date.compareTo(a.date));
-    final weekMinutes = weekWorkouts.fold<int>(0, (sum, w) => sum + w.durationMinutes);
+    final weekMinutes =
+        weekWorkouts.fold<int>(0, (sum, w) => sum + w.durationMinutes);
 
     final today = DateTime.now();
     final isToday = (DateTime d) =>
@@ -120,7 +122,8 @@ class _HealthScreenState extends State<HealthScreen> {
                 PillarCard(
                   pillar: Pillar.health,
                   title: w.label,
-                  subtitle: 'Gym · ${TimeOfDay.fromDateTime(w.date).format(context)}',
+                  subtitle:
+                      'Gym · ${TimeOfDay.fromDateTime(w.date).format(context)}',
                   meta: '${w.durationMinutes} min',
                   onTap: () => _logWorkout(w),
                 ),
@@ -135,7 +138,8 @@ class _HealthScreenState extends State<HealthScreen> {
             Card(
               child: Padding(
                 padding: const EdgeInsets.all(AppSpacing.md),
-                child: WeeklyBarChart(values: dailyMinutes, pillar: Pillar.health),
+                child:
+                    WeeklyBarChart(values: dailyMinutes, pillar: Pillar.health),
               ),
             ),
             const SizedBox(height: AppSpacing.lg),
@@ -148,7 +152,8 @@ class _HealthScreenState extends State<HealthScreen> {
                 PillarCard(
                   pillar: Pillar.health,
                   title: w.label,
-                  subtitle: 'Gym · ${_weekday(w.date)} ${TimeOfDay.fromDateTime(w.date).format(context)}',
+                  subtitle:
+                      'Gym · ${_weekday(w.date)} ${TimeOfDay.fromDateTime(w.date).format(context)}',
                   meta: '${w.durationMinutes} min',
                   onTap: () => _logWorkout(w),
                 ),

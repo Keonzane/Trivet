@@ -2,18 +2,24 @@ import 'package:flutter/material.dart';
 
 import 'app_text_field.dart';
 
-/// "28 Sep 2026" — the one date format the app uses in entry forms.
 String formatShortDate(DateTime d) {
   const months = [
-    'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dec',
   ];
   return '${d.day} ${months[d.month - 1]} ${d.year}';
 }
 
-/// A read-only text field that opens the date picker when tapped. Owns
-/// its own controller so the forms using it don't each need one; the form
-/// only holds the [DateTime] and hears about changes through [onChanged].
 class DateField extends StatefulWidget {
   const DateField({super.key, required this.value, required this.onChanged});
 

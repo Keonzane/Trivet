@@ -2,8 +2,6 @@ enum MediaType { book, film, series, game }
 
 enum MediaStatus { want, inProgress, done }
 
-/// Label text shared by MediaCard, the media detail screen, and the
-/// Add entry sheet, so the three don't each keep their own copy.
 extension MediaTypeLabel on MediaType {
   String get label {
     switch (this) {
@@ -37,8 +35,7 @@ class MediaEntry {
   final String title;
   final MediaType type;
   final MediaStatus status;
-  final int? rating; // 1-5, only meaningful once done
-
+  final int? rating;
   const MediaEntry({
     required this.id,
     required this.title,

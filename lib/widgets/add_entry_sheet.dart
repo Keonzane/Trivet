@@ -11,20 +11,6 @@ import 'date_field.dart';
 import 'duration_stepper.dart';
 import 'entry_modal.dart';
 
-/// Screen 05: one sheet, a pillar picker, and the field set underneath
-/// swaps to match. Opened from a pillar's own screen, [initialPillar]
-/// pre-selects that pillar and disables the picker (it still shows the
-/// pillar filled in, it just can't be changed). Opened from Dashboard's
-/// `+ Log entry` with [initialPillar] null, the picker is unset and
-/// freely switchable.
-///
-/// There's no dropdown to pick an existing project or title: tapping a
-/// project/title row already tells the sheet exactly which one you mean
-/// ([initialProject] / [initialMediaEntry]), and `+ Add project` /
-/// `+ Add title` always means "create a new one" — the same way
-/// `+ Log workout` always creates a new workout. A dropdown here would
-/// just be a second, redundant way to pick something you could already
-/// pick by tapping its row on the screen underneath.
 Future<void> showAddEntrySheet({
   required BuildContext context,
   Pillar? initialPillar,
@@ -35,12 +21,10 @@ Future<void> showAddEntrySheet({
   void Function(Workout workout)? onSaveHealth,
   void Function(MediaEntry entry, LeisureLog log)? onSaveLeisure,
 }) {
-  // A screen that opens the sheet locked to its own pillar only passes the
-  // callback for that pillar; only the Dashboard (picker unset, switchable)
-  // passes all three. This catches a caller that forgets one it needs.
   assert(
     switch (initialPillar) {
-      null => onSaveWork != null && onSaveHealth != null && onSaveLeisure != null,
+      null =>
+        onSaveWork != null && onSaveHealth != null && onSaveLeisure != null,
       Pillar.work => onSaveWork != null,
       Pillar.health => onSaveHealth != null,
       Pillar.leisure => onSaveLeisure != null,
@@ -88,19 +72,16 @@ class _AddEntrySheet extends StatefulWidget {
 class _AddEntrySheetState extends State<_AddEntrySheet> {
   Pillar? _pillar;
 
-  // Work fields.
   double _workHours = 1.0;
   DateTime _workDate = DateTime.now();
   bool _workTitleError = false;
   late final TextEditingController _workNewTitleController;
 
-  // Health fields.
   late WorkoutType _healthType;
   late int _healthMinutes;
   late DateTime _healthDate;
   late final TextEditingController _healthNotesController;
 
-  // Leisure fields.
   late MediaType _leisureType;
   int _leisureMinutes = 30;
   DateTime _leisureDate = DateTime.now();
@@ -163,7 +144,7 @@ class _AddEntrySheetState extends State<_AddEntrySheet> {
   void _save() {
     switch (_pillar) {
       case null:
-        return; // Save is disabled in build() until a pillar is chosen.
+        return;
       case Pillar.work:
         Project project;
         if (widget.initialProject != null) {
@@ -389,10 +370,6 @@ class _AddEntrySheetState extends State<_AddEntrySheet> {
             ButtonSegment(value: Pillar.leisure, label: Text('Leisure')),
           ],
           selected: _pillar == null ? const {} : {_pillar!},
-          // Null (disabled) when opened from a pillar's own screen: that
-          // screen only wired up save logic for its own pillar, so letting
-          // the picker move would let a save silently do nothing. The
-          // current pillar still shows filled in either way.
           onSelectionChanged: widget.initialPillar != null
               ? null
               : (s) => setState(() => _pillar = s.isEmpty ? null : s.first),

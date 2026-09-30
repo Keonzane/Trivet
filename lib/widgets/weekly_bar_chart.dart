@@ -10,7 +10,6 @@ class WeeklyBarChart extends StatelessWidget {
     this.height = 132,
   });
 
-  /// Seven values, Monday first, in the chart's unit (e.g. minutes).
   final List<double> values;
   final Pillar pillar;
   final double height;

@@ -3,7 +3,7 @@ enum ProjectStatus { active, paused, done }
 class Project {
   final String id;
   final String title;
-  final String subtitle; // e.g. "Client work", "Coursework"
+  final String subtitle;
   final ProjectStatus status;
 
   const Project({

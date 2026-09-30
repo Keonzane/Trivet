@@ -8,10 +8,6 @@ import '../models/project.dart';
 import '../models/work_log.dart';
 import '../models/workout.dart';
 
-/// Generic list-of-JSON-records store. One shared_preferences key holds a
-/// List<String>, one JSON string per record. Every change rewrites the
-/// whole list for that key — fine at the record counts Trivet expects
-/// (a few hundred over a term). See proposal §"How my app saves data".
 class ListStore<T> {
   final String key;
   final Map<String, dynamic> Function(T item) toMap;
@@ -26,9 +22,19 @@ class ListStore<T> {
   Future<List<T>> load() async {
     final prefs = await SharedPreferences.getInstance();
     final raw = prefs.getStringList(key) ?? const [];
-    return raw
-        .map((s) => fromMap(jsonDecode(s) as Map<String, dynamic>))
-        .toList();
+    final items = <T>[];
+    for (final s in raw) {
+      try {
+        items.add(fromMap(jsonDecode(s) as Map<String, dynamic>));
+      } catch (_) {
+        // One corrupted record (malformed JSON, a missing field, an enum
+        // value that no longer exists) used to throw here and take the
+        // whole list down with it — every other record for that model
+        // never loaded, and the screen sat on its spinner forever. Now a
+        // bad record is just dropped; everything else still loads.
+      }
+    }
+    return items;
   }
 
   Future<void> save(List<T> items) async {
@@ -38,7 +44,6 @@ class ListStore<T> {
   }
 }
 
-/// One store per model, per the proposal's shared_preferences plan.
 class ProjectStore extends ListStore<Project> {
   ProjectStore()
       : super(
@@ -84,13 +89,9 @@ class LeisureLogStore extends ListStore<LeisureLog> {
         );
 }
 
-/// Sunday-start "this week" range, inclusive, used by both Work and
-/// Health screens so streaks and weekly totals agree with the Dashboard
-/// when it's built. See proposal risk: "weekly hours need dated entries
-/// and correct week logic."
 class WeekRange {
-  final DateTime start; // Monday 00:00
-  final DateTime end; // Sunday 23:59:59.999
+  final DateTime start;
+  final DateTime end;
 
   const WeekRange(this.start, this.end);
 

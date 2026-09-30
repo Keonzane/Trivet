@@ -3,19 +3,15 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-/// The three pillars Trivet tracks.
 enum Pillar { work, health, leisure }
 
-/// Spacing ladder. No loose numbers anywhere else in the app.
 class AppSpacing {
-  static const double xs = 4; // inside components only
-  static const double sm = 8; // base unit, list gaps
-  static const double md = 16; // screen edge padding
-  static const double lg = 24; // between sections
+  static const double xs = 4;
+  static const double sm = 8;
+  static const double md = 16;
+  static const double lg = 24;
 }
 
-/// Per-pillar accent colour, looked up via `context.pillars.of(pillar)`.
-/// Widgets never receive a hex value directly.
 @immutable
 class PillarColors extends ThemeExtension<PillarColors> {
   final Color work;
@@ -42,17 +38,17 @@ class PillarColors extends ThemeExtension<PillarColors> {
   }
 
   static const light = PillarColors(
-    work: Color(0xFF3D5A73), // Slate
-    health: Color(0xFF4F7942), // Moss
-    leisure: Color(0xFFB4531F), // Ember
+    work: Color(0xFF3D5A73),
+    health: Color(0xFF4F7942),
+    leisure: Color(0xFFB4531F),
     onPillar: Colors.white,
   );
 
   static const dark = PillarColors(
-    work: Color(0xFF7FA3C4), // Slate (dark)
-    health: Color(0xFF7FB36F), // Moss (dark)
-    leisure: Color(0xFFE58A5A), // Ember (dark)
-    onPillar: Color(0xFF1C1E1F), // Ink — pillar fills are light in dark mode
+    work: Color(0xFF7FA3C4),
+    health: Color(0xFF7FB36F),
+    leisure: Color(0xFFE58A5A),
+    onPillar: Color(0xFF1C1E1F),
   );
 
   @override
@@ -82,12 +78,9 @@ class PillarColors extends ThemeExtension<PillarColors> {
   }
 }
 
-/// Convenience accessor: `context.pillars.of(pillar)`.
 extension PillarColorsContext on BuildContext {
   PillarColors get pillars => Theme.of(this).extension<PillarColors>()!;
 }
-
-// ---- Palette --------------------------------------------------------
 
 const _paper = Color(0xFFF5F3EE);
 const _ink = Color(0xFF1C1E1F);
@@ -100,8 +93,6 @@ const _bone = Color(0xFFF5F3EE);
 const _lineDark = Color(0xFF3F4345);
 const _secondaryGreyDark = Color(0xFFA6AAAC);
 const _errorDark = Color(0xFFF0847C);
-
-// ---- Text theme -------------------------------------------------------
 
 TextTheme _textTheme(Color onSurface) {
   final headline = GoogleFonts.spaceGrotesk(color: onSurface);
@@ -122,8 +113,6 @@ TextTheme _textTheme(Color onSurface) {
     ),
   );
 }
-
-// ---- Light theme --------------------------------------------------------
 
 final ThemeData appTheme = _buildTheme(
   brightness: Brightness.light,

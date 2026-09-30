@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 
 import '../theme.dart';
 
-/// One read-only stat inside the shared two-up row (see [StatCardRow]).
 class StatCardData {
   final String label;
   final String value;

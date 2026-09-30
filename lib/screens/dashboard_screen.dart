@@ -11,18 +11,12 @@ import '../widgets/add_entry_sheet.dart';
 import '../widgets/media_card.dart';
 import '../widgets/primary_button.dart';
 import '../widgets/stat_card.dart';
+import '../widgets/trivet_mark.dart';
 import 'media_detail_screen.dart';
 
-/// Screen 01 · Dashboard: the stat row, the nudge, and the "currently
-/// enjoying" shelf, all computed live from the same five stores every
-/// other screen reads. Not built yet: the triad chart (stretch, per the
-/// proposal).
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key, this.onSeeAllLeisure});
 
-  /// Lets the app shell switch to the Leisure tab when "SEE ALL" is
-  /// tapped. Null (e.g. in a test that mounts this screen alone) just
-  /// hides the button rather than crashing on a missing callback.
   final VoidCallback? onSeeAllLeisure;
 
   @override
@@ -50,9 +44,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   Future<void> _load() async {
-    // All five stores load in parallel — none depends on another, and
-    // this screen doesn't write anything until the person taps
-    // + Log entry, so there's nothing to sequence.
     final results = await Future.wait([
       _projectStore.load(),
       _workLogStore.load(),
@@ -79,25 +70,22 @@ class _DashboardScreenState extends State<DashboardScreen> {
     final theme = Theme.of(context);
     final week = WeekRange.containing(DateTime.now());
 
-    // Same "this week" filter every other screen uses, just applied
-    // across all three pillars at once instead of one.
     final workHours = _workLogs
         .where((l) => week.contains(l.date))
         .fold(0.0, (sum, l) => sum + l.hours);
 
     final weekWorkouts = _workouts.where((w) => week.contains(w.date)).toList();
+    final healthMinutes =
+        weekWorkouts.fold(0, (sum, w) => sum + w.durationMinutes);
+    final healthHours = healthMinutes / 60;
 
     final leisureMinutes = _leisureLogs
         .where((l) => week.contains(l.date))
         .fold(0, (sum, l) => sum + l.minutes);
     final leisureHours = leisureMinutes / 60;
 
-    // Shelf caps at two rows per the mockup's own revision note (a third
-    // row would push + Log entry off-screen on phone).
-    final enjoying = _media
-        .where((e) => e.status != MediaStatus.want)
-        .take(2)
-        .toList();
+    final enjoying =
+        _media.where((e) => e.status != MediaStatus.want).take(2).toList();
 
     final nudge = _nudgeFor(
       workHours: workHours,
@@ -119,10 +107,43 @@ class _DashboardScreenState extends State<DashboardScreen> {
             const SizedBox(height: AppSpacing.xs),
             Text('This week', style: theme.textTheme.headlineLarge),
             const SizedBox(height: AppSpacing.lg),
+            Center(
+              child: SizedBox(
+                width: 200,
+                height: 200,
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    TrivetMark(
+                        work: workHours,
+                        health: healthHours,
+                        leisure: leisureHours),
+                    Positioned(
+                      top: 0,
+                      child: _AxisLabel('WORK', theme),
+                    ),
+                    Positioned(
+                      bottom: 14,
+                      left: 0,
+                      child: _AxisLabel('LEISURE', theme),
+                    ),
+                    Positioned(
+                      bottom: 14,
+                      right: 0,
+                      child: _AxisLabel('HEALTH', theme),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: AppSpacing.lg),
             StatCardRow(stats: [
-              StatCardData(label: 'Hrs worked', value: workHours.toStringAsFixed(1)),
+              StatCardData(
+                  label: 'Hrs worked', value: workHours.toStringAsFixed(1)),
               StatCardData(label: 'Workouts', value: '${weekWorkouts.length}'),
-              StatCardData(label: 'Leisure', value: '${leisureHours.toStringAsFixed(1)}h'),
+              StatCardData(
+                  label: 'Leisure',
+                  value: '${leisureHours.toStringAsFixed(1)}h'),
             ]),
             const SizedBox(height: AppSpacing.md),
             Card(
@@ -194,16 +215,24 @@ class _DashboardScreenState extends State<DashboardScreen> {
         ),
       ),
     );
-    // The detail screen can log time on its own; reload so this screen's
-    // hours-this-week reflects it.
     final logs = await _leisureLogStore.load();
     if (mounted) setState(() => _leisureLogs = logs);
   }
 
   String _weekRangeLabel(WeekRange week) {
     const months = [
-      'JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN',
-      'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC',
+      'JAN',
+      'FEB',
+      'MAR',
+      'APR',
+      'MAY',
+      'JUN',
+      'JUL',
+      'AUG',
+      'SEP',
+      'OCT',
+      'NOV',
+      'DEC',
     ];
     const days = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'];
     final start = week.start;
@@ -212,13 +241,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
         '${days[end.weekday - 1]} ${end.day} ${months[end.month - 1]}';
   }
 
-  /// Picks the thinnest pillar to name in the nudge. Work and Leisure are
-  /// already both in hours, so they compare directly; Health uses a
-  /// session count instead of hours (per the mockup's "WORKOUTS 3" stat),
-  /// so it's handled as its own zero/non-zero check rather than folded
-  /// into the same comparison — the proposal deliberately avoids inventing
-  /// a shared unit across pillars, and this keeps that promise instead of
-  /// quietly breaking it for the sake of one sentence of copy.
   String _nudgeFor({
     required double workHours,
     required int workoutCount,
@@ -230,15 +252,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
     if (workoutCount == 0) {
       return 'No workouts logged yet this week.';
     }
-    final thinnest =
-        workHours <= leisureHours ? 'Work' : 'Leisure';
+    final thinnest = workHours <= leisureHours ? 'Work' : 'Leisure';
     return '$thinnest is thin this week.';
   }
 
-  /// This is the one place the unified sheet's pillar picker is opened
-  /// truly unset and fully switchable — safe here specifically because
-  /// this screen already loads all five stores, so whichever pillar gets
-  /// chosen has somewhere real to save to.
   Future<void> _openAddEntry() async {
     await showAddEntrySheet(
       context: context,
@@ -266,6 +283,22 @@ class _DashboardScreenState extends State<DashboardScreen> {
         await _leisureLogStore.save(_leisureLogs);
         if (mounted) setState(() {});
       },
+    );
+  }
+}
+
+class _AxisLabel extends StatelessWidget {
+  const _AxisLabel(this.text, this.theme);
+
+  final String text;
+  final ThemeData theme;
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      text,
+      style: theme.textTheme.labelSmall
+          ?.copyWith(color: theme.colorScheme.secondary),
     );
   }
 }
