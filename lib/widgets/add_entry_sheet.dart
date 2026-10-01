@@ -196,7 +196,7 @@ class _AddEntrySheetState extends State<_AddEntrySheet> {
             id: DateTime.now().microsecondsSinceEpoch.toString(),
             title: title,
             type: _leisureType,
-            status: MediaStatus.inProgress,
+            status: MediaStatus.want,
           );
         }
         widget.onSaveLeisure?.call(

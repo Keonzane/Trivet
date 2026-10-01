@@ -36,6 +36,7 @@ class MediaEntry {
   final MediaType type;
   final MediaStatus status;
   final int? rating;
+
   const MediaEntry({
     required this.id,
     required this.title,
