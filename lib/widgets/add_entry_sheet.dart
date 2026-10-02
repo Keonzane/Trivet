@@ -361,19 +361,19 @@ class _AddEntrySheetState extends State<_AddEntrySheet> {
       onCancel: () => Navigator.of(context).pop(),
       onSave: _pillar == null ? null : _save,
       fields: [
-        SegmentedButton<Pillar>(
-          showSelectedIcon: false,
-          emptySelectionAllowed: true,
-          segments: const [
-            ButtonSegment(value: Pillar.work, label: Text('Work')),
-            ButtonSegment(value: Pillar.health, label: Text('Health')),
-            ButtonSegment(value: Pillar.leisure, label: Text('Leisure')),
-          ],
-          selected: _pillar == null ? const {} : {_pillar!},
-          onSelectionChanged: widget.initialPillar != null
-              ? null
-              : (s) => setState(() => _pillar = s.isEmpty ? null : s.first),
-        ),
+        if (widget.initialPillar == null)
+          SegmentedButton<Pillar>(
+            showSelectedIcon: false,
+            emptySelectionAllowed: true,
+            segments: const [
+              ButtonSegment(value: Pillar.work, label: Text('Work')),
+              ButtonSegment(value: Pillar.health, label: Text('Health')),
+              ButtonSegment(value: Pillar.leisure, label: Text('Leisure')),
+            ],
+            selected: _pillar == null ? const {} : {_pillar!},
+            onSelectionChanged: (s) =>
+                setState(() => _pillar = s.isEmpty ? null : s.first),
+          ),
         ..._fieldsForPillar(),
       ],
     );

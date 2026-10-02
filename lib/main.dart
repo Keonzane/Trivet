@@ -27,7 +27,6 @@ class TrivetApp extends StatelessWidget {
     return MaterialApp(
       title: 'Trivet',
       debugShowCheckedModeBanner: false,
-      useInheritedMediaQuery: true,
       locale: DevicePreview.locale(context),
       builder: DevicePreview.appBuilder,
       theme: appTheme,
