@@ -8,6 +8,10 @@ import '../models/project.dart';
 import '../models/work_log.dart';
 import '../models/workout.dart';
 
+/// Generic list-of-JSON-records store. One shared_preferences key holds a
+/// List<String>, one JSON string per record. Every change rewrites the
+/// whole list for that key — fine at the record counts Trivet expects
+/// (a few hundred over a term). See proposal §"How my app saves data".
 class ListStore<T> {
   final String key;
   final Map<String, dynamic> Function(T item) toMap;
@@ -44,6 +48,7 @@ class ListStore<T> {
   }
 }
 
+/// One store per model, per the proposal's shared_preferences plan.
 class ProjectStore extends ListStore<Project> {
   ProjectStore()
       : super(

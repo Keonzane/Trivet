@@ -72,21 +72,27 @@ class _AddEntrySheet extends StatefulWidget {
 class _AddEntrySheetState extends State<_AddEntrySheet> {
   Pillar? _pillar;
 
+  // Work fields.
   double _workHours = 1.0;
   DateTime _workDate = DateTime.now();
   bool _workTitleError = false;
   late final TextEditingController _workNewTitleController;
 
+  // Health fields.
   late WorkoutType _healthType;
   late int _healthMinutes;
   late DateTime _healthDate;
   late final TextEditingController _healthNotesController;
 
+  // Leisure fields.
   late MediaType _leisureType;
   int _leisureMinutes = 30;
   DateTime _leisureDate = DateTime.now();
   bool _leisureTitleError = false;
   late final TextEditingController _leisureNewTitleController;
+  int _leisurePages = 0;
+  int _leisureSeason = 1;
+  int _leisureEpisode = 1;
 
   @override
   void initState() {
@@ -121,10 +127,8 @@ class _AddEntrySheetState extends State<_AddEntrySheet> {
         return 'Pull';
       case WorkoutType.legs:
         return 'Legs';
-      case WorkoutType.run:
-        return 'Run';
-      case WorkoutType.swim:
-        return 'Swim';
+      case WorkoutType.cardio:
+        return 'Cardio';
     }
   }
 
@@ -180,6 +184,7 @@ class _AddEntrySheetState extends State<_AddEntrySheet> {
           durationMinutes: _healthMinutes,
           date: _healthDate,
           notes: _healthNotesController.text.trim(),
+          done: widget.initialWorkout?.done ?? false,
         ));
         Navigator.of(context).pop();
       case Pillar.leisure:
@@ -197,6 +202,9 @@ class _AddEntrySheetState extends State<_AddEntrySheet> {
             title: title,
             type: _leisureType,
             status: MediaStatus.want,
+            pages: _leisureType == MediaType.book ? _leisurePages : 0,
+            season: _leisureType == MediaType.series ? _leisureSeason : 1,
+            episode: _leisureType == MediaType.series ? _leisureEpisode : 1,
           );
         }
         widget.onSaveLeisure?.call(
@@ -342,6 +350,40 @@ class _AddEntrySheetState extends State<_AddEntrySheet> {
               onChanged: (v) => setState(() => _leisureMinutes = v.toInt()),
             ),
           ),
+          if (widget.initialMediaEntry == null &&
+              _leisureType == MediaType.book)
+            LabelledField(
+              label: 'Pages',
+              child: DurationStepper(
+                value: _leisurePages,
+                step: 1,
+                unit: 'pages',
+                onChanged: (v) => setState(() => _leisurePages = v.toInt()),
+              ),
+            ),
+          if (widget.initialMediaEntry == null &&
+              _leisureType == MediaType.series) ...[
+            LabelledField(
+              label: 'Season',
+              child: DurationStepper(
+                value: _leisureSeason,
+                step: 1,
+                unit: 'season',
+                min: 1,
+                onChanged: (v) => setState(() => _leisureSeason = v.toInt()),
+              ),
+            ),
+            LabelledField(
+              label: 'Episode',
+              child: DurationStepper(
+                value: _leisureEpisode,
+                step: 1,
+                unit: 'episode',
+                min: 1,
+                onChanged: (v) => setState(() => _leisureEpisode = v.toInt()),
+              ),
+            ),
+          ],
           LabelledField(
             label: 'Date',
             child: DateField(

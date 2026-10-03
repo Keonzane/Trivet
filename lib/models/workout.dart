@@ -1,4 +1,4 @@
-enum WorkoutType { push, pull, legs, run, swim }
+enum WorkoutType { push, pull, legs, cardio }
 
 class Workout {
   final String id;
@@ -6,6 +6,7 @@ class Workout {
   final int durationMinutes;
   final DateTime date;
   final String notes;
+  final bool done;
 
   const Workout({
     required this.id,
@@ -13,7 +14,26 @@ class Workout {
     required this.durationMinutes,
     required this.date,
     this.notes = '',
+    this.done = false,
   });
+
+  Workout copyWith({
+    String? id,
+    WorkoutType? type,
+    int? durationMinutes,
+    DateTime? date,
+    String? notes,
+    bool? done,
+  }) {
+    return Workout(
+      id: id ?? this.id,
+      type: type ?? this.type,
+      durationMinutes: durationMinutes ?? this.durationMinutes,
+      date: date ?? this.date,
+      notes: notes ?? this.notes,
+      done: done ?? this.done,
+    );
+  }
 
   String get label {
     switch (type) {
@@ -23,10 +43,8 @@ class Workout {
         return 'Pull day';
       case WorkoutType.legs:
         return 'Leg day';
-      case WorkoutType.run:
-        return 'Run';
-      case WorkoutType.swim:
-        return 'Swim';
+      case WorkoutType.cardio:
+        return 'Cardio day';
     }
   }
 
@@ -36,6 +54,7 @@ class Workout {
         'durationMinutes': durationMinutes,
         'date': date.toIso8601String(),
         'notes': notes,
+        'done': done,
       };
 
   factory Workout.fromMap(Map<String, dynamic> map) => Workout(
@@ -44,5 +63,6 @@ class Workout {
         durationMinutes: map['durationMinutes'] as int,
         date: DateTime.parse(map['date'] as String),
         notes: map['notes'] as String? ?? '',
+        done: map['done'] as bool? ?? false,
       );
 }

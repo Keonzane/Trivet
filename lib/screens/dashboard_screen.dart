@@ -74,7 +74,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
         .where((l) => week.contains(l.date))
         .fold(0.0, (sum, l) => sum + l.hours);
 
-    final weekWorkouts = _workouts.where((w) => week.contains(w.date)).toList();
+    final weekWorkouts =
+        _workouts.where((w) => week.contains(w.date) && w.done).toList();
     final healthMinutes =
         weekWorkouts.fold(0, (sum, w) => sum + w.durationMinutes);
     final healthHours = healthMinutes / 60;

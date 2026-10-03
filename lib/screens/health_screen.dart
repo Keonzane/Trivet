@@ -4,12 +4,13 @@ import '../models/workout.dart';
 import '../services/storage_service.dart';
 import '../theme.dart';
 import '../widgets/add_entry_sheet.dart';
+import '../widgets/date_field.dart';
 import '../widgets/dismissible_row.dart';
 import '../widgets/empty_state.dart';
 import '../widgets/pillar_button.dart';
-import '../widgets/pillar_card.dart';
 import '../widgets/stat_card.dart';
 import '../widgets/weekly_bar_chart.dart';
+import '../widgets/workout_row.dart';
 
 class HealthScreen extends StatefulWidget {
   const HealthScreen({super.key});
@@ -55,6 +56,16 @@ class _HealthScreenState extends State<HealthScreen> {
     );
   }
 
+  Future<void> _toggleDone(Workout w) async {
+    setState(() {
+      _workouts = [
+        for (final x in _workouts)
+          if (x.id == w.id) x.copyWith(done: !x.done) else x,
+      ];
+    });
+    await _store.save(_workouts);
+  }
+
   Future<void> _deleteWorkout(Workout w) async {
     setState(() {
       _workouts = _workouts.where((x) => x.id != w.id).toList();
@@ -64,6 +75,7 @@ class _HealthScreenState extends State<HealthScreen> {
 
   int get _streakDays {
     final days = _workouts
+        .where((w) => w.done)
         .map((w) => DateTime(w.date.year, w.date.month, w.date.day))
         .toSet();
     var streak = 0;
@@ -88,18 +100,40 @@ class _HealthScreenState extends State<HealthScreen> {
     final week = WeekRange.containing(DateTime.now());
     final weekWorkouts = _workouts.where((w) => week.contains(w.date)).toList()
       ..sort((a, b) => b.date.compareTo(a.date));
+    final doneThisWeek = weekWorkouts.where((w) => w.done).toList();
     final weekMinutes =
-        weekWorkouts.fold<int>(0, (sum, w) => sum + w.durationMinutes);
+        doneThisWeek.fold<int>(0, (sum, w) => sum + w.durationMinutes);
 
     final today = DateTime.now();
-    final isToday = (DateTime d) =>
+    final startOfToday = DateTime(today.year, today.month, today.day);
+    bool isToday(DateTime d) =>
         d.year == today.year && d.month == today.month && d.day == today.day;
+
     final todays = weekWorkouts.where((w) => isToday(w.date)).toList();
-    final earlier = weekWorkouts.where((w) => !isToday(w.date)).toList();
+    final earlier = weekWorkouts
+        .where((w) => !isToday(w.date) && w.date.isBefore(startOfToday))
+        .toList();
+    final upcoming = _workouts.where((w) => w.date.isAfter(today)).toList()
+      ..sort((a, b) => a.date.compareTo(b.date));
 
     final dailyMinutes = List<double>.filled(7, 0);
-    for (final w in weekWorkouts) {
+    for (final w in doneThisWeek) {
       dailyMinutes[w.date.weekday - 1] += w.durationMinutes;
+    }
+
+    Widget rowFor(Workout w, String subtitle) {
+      return DismissibleRow(
+        itemKey: ValueKey(w.id),
+        title: w.label,
+        confirmMessage: 'This removes this logged session.',
+        onDelete: () => _deleteWorkout(w),
+        child: WorkoutRow(
+          workout: w,
+          subtitle: subtitle,
+          onToggleDone: () => _toggleDone(w),
+          onTap: () => _logWorkout(w),
+        ),
+      );
     }
 
     return Scaffold(
@@ -109,7 +143,7 @@ class _HealthScreenState extends State<HealthScreen> {
           children: [
             const SizedBox(height: AppSpacing.sm),
             Text(
-              '${weekWorkouts.length} SESSIONS THIS WEEK',
+              '${doneThisWeek.length} SESSIONS THIS WEEK',
               style: theme.textTheme.labelSmall
                   ?.copyWith(color: theme.colorScheme.secondary),
             ),
@@ -127,20 +161,8 @@ class _HealthScreenState extends State<HealthScreen> {
                       ?.copyWith(color: theme.colorScheme.secondary)),
               const SizedBox(height: AppSpacing.sm),
               for (final w in todays) ...[
-                DismissibleRow(
-                  itemKey: ValueKey(w.id),
-                  title: w.label,
-                  confirmMessage: 'This removes this logged session.',
-                  onDelete: () => _deleteWorkout(w),
-                  child: PillarCard(
-                    pillar: Pillar.health,
-                    title: w.label,
-                    subtitle:
-                        'Gym · ${TimeOfDay.fromDateTime(w.date).format(context)}',
-                    meta: '${w.durationMinutes} min',
-                    onTap: () => _logWorkout(w),
-                  ),
-                ),
+                rowFor(w,
+                    'Gym · ${TimeOfDay.fromDateTime(w.date).format(context)}'),
                 const SizedBox(height: AppSpacing.sm),
               ],
               const SizedBox(height: AppSpacing.sm),
@@ -157,30 +179,29 @@ class _HealthScreenState extends State<HealthScreen> {
               ),
             ),
             const SizedBox(height: AppSpacing.lg),
+            if (upcoming.isNotEmpty) ...[
+              Text('UPCOMING',
+                  style: theme.textTheme.labelSmall
+                      ?.copyWith(color: theme.colorScheme.secondary)),
+              const SizedBox(height: AppSpacing.sm),
+              for (final w in upcoming) ...[
+                rowFor(w, 'Gym · ${formatShortDate(w.date)}'),
+                const SizedBox(height: AppSpacing.sm),
+              ],
+              const SizedBox(height: AppSpacing.sm),
+            ],
             if (earlier.isNotEmpty) ...[
               Text('EARLIER THIS WEEK',
                   style: theme.textTheme.labelSmall
                       ?.copyWith(color: theme.colorScheme.secondary)),
               const SizedBox(height: AppSpacing.sm),
               for (final w in earlier) ...[
-                DismissibleRow(
-                  itemKey: ValueKey(w.id),
-                  title: w.label,
-                  confirmMessage: 'This removes this logged session.',
-                  onDelete: () => _deleteWorkout(w),
-                  child: PillarCard(
-                    pillar: Pillar.health,
-                    title: w.label,
-                    subtitle:
-                        'Gym · ${_weekday(w.date)} ${TimeOfDay.fromDateTime(w.date).format(context)}',
-                    meta: '${w.durationMinutes} min',
-                    onTap: () => _logWorkout(w),
-                  ),
-                ),
+                rowFor(w,
+                    'Gym · ${_weekday(w.date)} ${TimeOfDay.fromDateTime(w.date).format(context)}'),
                 const SizedBox(height: AppSpacing.sm),
               ],
             ],
-            if (weekWorkouts.isEmpty)
+            if (weekWorkouts.isEmpty && upcoming.isEmpty)
               EmptyState(
                 message: 'No workouts logged yet. Start with anything.',
                 icon: Icons.favorite_outline,

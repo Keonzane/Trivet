@@ -9,6 +9,7 @@ import '../widgets/dismissible_row.dart';
 import '../widgets/empty_state.dart';
 import '../widgets/pillar_button.dart';
 import '../widgets/pillar_card.dart';
+import 'project_detail_screen.dart';
 
 class WorkScreen extends StatefulWidget {
   const WorkScreen({super.key});
@@ -67,6 +68,27 @@ class _WorkScreenState extends State<WorkScreen> {
     );
   }
 
+  Future<void> _openDetail(Project p) async {
+    await Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => ProjectDetailScreen(
+          project: p,
+          onUpdate: (updated) async {
+            setState(() {
+              _projects = [
+                for (final x in _projects)
+                  if (x.id == updated.id) updated else x,
+              ];
+            });
+            await _projectStore.save(_projects);
+          },
+        ),
+      ),
+    );
+    final logs = await _workLogStore.load();
+    if (mounted) setState(() => _logs = logs);
+  }
+
   Future<void> _deleteProject(Project p) async {
     setState(() {
       _projects = _projects.where((x) => x.id != p.id).toList();
@@ -83,8 +105,10 @@ class _WorkScreenState extends State<WorkScreen> {
     }
 
     final filtered = _projects.where((p) => p.status == _filter).toList();
-    final activeCount = _projects.where((p) => p.status == ProjectStatus.active).length;
-    final weekTotal = _projects.fold<double>(0, (sum, p) => sum + _hoursThisWeek(p.id));
+    final activeCount =
+        _projects.where((p) => p.status == ProjectStatus.active).length;
+    final weekTotal =
+        _projects.fold<double>(0, (sum, p) => sum + _hoursThisWeek(p.id));
     final theme = Theme.of(context);
 
     return Scaffold(
@@ -106,8 +130,10 @@ class _WorkScreenState extends State<WorkScreen> {
               SegmentedButton<ProjectStatus>(
                 showSelectedIcon: false,
                 segments: const [
-                  ButtonSegment(value: ProjectStatus.active, label: Text('Active')),
-                  ButtonSegment(value: ProjectStatus.paused, label: Text('Paused')),
+                  ButtonSegment(
+                      value: ProjectStatus.active, label: Text('Active')),
+                  ButtonSegment(
+                      value: ProjectStatus.paused, label: Text('Paused')),
                   ButtonSegment(value: ProjectStatus.done, label: Text('Done')),
                 ],
                 selected: {_filter},
@@ -122,11 +148,13 @@ class _WorkScreenState extends State<WorkScreen> {
                             : 'Nothing in ${_filter.name} yet.',
                         icon: Icons.work_outline,
                         actionLabel: _projects.isEmpty ? '+ Add project' : null,
-                        onAction: _projects.isEmpty ? () => _addHours(null) : null,
+                        onAction:
+                            _projects.isEmpty ? () => _addHours(null) : null,
                       )
                     : ListView.separated(
                         itemCount: filtered.length,
-                        separatorBuilder: (_, __) => const SizedBox(height: AppSpacing.sm),
+                        separatorBuilder: (_, __) =>
+                            const SizedBox(height: AppSpacing.sm),
                         itemBuilder: (context, i) {
                           final p = filtered[i];
                           final hours = _hoursThisWeek(p.id);
@@ -141,7 +169,7 @@ class _WorkScreenState extends State<WorkScreen> {
                               title: p.title,
                               subtitle: p.subtitle,
                               meta: '${hours.toStringAsFixed(1)} h',
-                              onTap: () => _addHours(p),
+                              onTap: () => _openDetail(p),
                             ),
                           );
                         },

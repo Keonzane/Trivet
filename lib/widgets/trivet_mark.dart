@@ -109,7 +109,7 @@ class _TrivetMarkPainter extends CustomPainter {
 
     final dataTriangle = Path()
       ..addPolygon([workPoint, healthPoint, leisurePoint], true);
-    canvas.drawPath(dataTriangle, Paint()..color = ink.withValues(alpha: 0.08));
+    canvas.drawPath(dataTriangle, Paint()..color = line);
     canvas.drawPath(
       dataTriangle,
       Paint()
