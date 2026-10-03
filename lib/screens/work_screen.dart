@@ -4,6 +4,7 @@ import '../models/project.dart';
 import '../models/work_log.dart';
 import '../services/storage_service.dart';
 import '../theme.dart';
+import '../widgets/screen_header.dart';
 import '../widgets/add_entry_sheet.dart';
 import '../widgets/dismissible_row.dart';
 import '../widgets/empty_state.dart';
@@ -48,6 +49,37 @@ class _WorkScreenState extends State<WorkScreen> {
     return _logs
         .where((l) => l.projectId == projectId && week.contains(l.date))
         .fold(0.0, (sum, l) => sum + l.hours);
+  }
+
+  String _rowSubtitle(Project p) {
+    final dates = _logs.where((l) => l.projectId == p.id).map((l) => l.date);
+    if (dates.isEmpty) return p.subtitle;
+    final last = dates.reduce((a, b) => a.isAfter(b) ? a : b);
+    final today = DateTime.now();
+    final daysAgo = DateTime(today.year, today.month, today.day)
+        .difference(DateTime(last.year, last.month, last.day))
+        .inDays;
+    const weekdays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+    const months = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
+    ];
+    final when = daysAgo == 0
+        ? 'today'
+        : (daysAgo > 0 && daysAgo < 7)
+            ? weekdays[last.weekday - 1]
+            : '${last.day} ${months[last.month - 1]}';
+    return '${p.subtitle} · last logged $when';
   }
 
   Future<void> _addHours(Project? project) async {
@@ -109,7 +141,6 @@ class _WorkScreenState extends State<WorkScreen> {
         _projects.where((p) => p.status == ProjectStatus.active).length;
     final weekTotal =
         _projects.fold<double>(0, (sum, p) => sum + _hoursThisWeek(p.id));
-    final theme = Theme.of(context);
 
     return Scaffold(
       body: SafeArea(
@@ -118,17 +149,15 @@ class _WorkScreenState extends State<WorkScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const SizedBox(height: AppSpacing.sm),
-              Text(
-                '$activeCount ACTIVE · ${weekTotal.toStringAsFixed(1)}H THIS WEEK',
-                style: theme.textTheme.labelSmall
-                    ?.copyWith(color: theme.colorScheme.secondary),
+              ScreenHeader(
+                caption:
+                    '$activeCount ACTIVE · ${weekTotal.toStringAsFixed(1)}H THIS WEEK',
+                title: 'Projects',
               ),
-              const SizedBox(height: AppSpacing.xs),
-              Text('Projects', style: theme.textTheme.headlineLarge),
               const SizedBox(height: AppSpacing.md),
               SegmentedButton<ProjectStatus>(
                 showSelectedIcon: false,
+                expandedInsets: EdgeInsets.zero,
                 segments: const [
                   ButtonSegment(
                       value: ProjectStatus.active, label: Text('Active')),
@@ -167,7 +196,7 @@ class _WorkScreenState extends State<WorkScreen> {
                             child: PillarCard(
                               pillar: Pillar.work,
                               title: p.title,
-                              subtitle: p.subtitle,
+                              subtitle: _rowSubtitle(p),
                               meta: '${hours.toStringAsFixed(1)} h',
                               onTap: () => _openDetail(p),
                             ),

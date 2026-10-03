@@ -7,6 +7,7 @@ import '../models/work_log.dart';
 import '../models/workout.dart';
 import '../services/storage_service.dart';
 import '../theme.dart';
+import '../widgets/screen_header.dart';
 import '../widgets/add_entry_sheet.dart';
 import '../widgets/media_card.dart';
 import '../widgets/primary_button.dart';
@@ -99,14 +100,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
         child: ListView(
           padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
           children: [
-            const SizedBox(height: AppSpacing.sm),
-            Text(
-              _weekRangeLabel(week),
-              style: theme.textTheme.labelSmall
-                  ?.copyWith(color: theme.colorScheme.secondary),
+            ScreenHeader(
+              caption: _weekRangeLabel(week),
+              title: 'This week',
             ),
-            const SizedBox(height: AppSpacing.xs),
-            Text('This week', style: theme.textTheme.headlineLarge),
             const SizedBox(height: AppSpacing.lg),
             Center(
               child: SizedBox(
@@ -121,36 +118,68 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         leisure: leisureHours),
                     Positioned(
                       top: 0,
-                      child: _AxisLabel('WORK', theme),
+                      child: _AxisLabel('WORK', Pillar.work),
                     ),
                     Positioned(
                       bottom: 14,
                       left: 0,
-                      child: _AxisLabel('LEISURE', theme),
+                      child: _AxisLabel('LEISURE', Pillar.leisure),
                     ),
                     Positioned(
                       bottom: 14,
                       right: 0,
-                      child: _AxisLabel('HEALTH', theme),
+                      child: _AxisLabel('HEALTH', Pillar.health),
                     ),
                   ],
                 ),
               ),
             ),
             const SizedBox(height: AppSpacing.lg),
-            StatCardRow(stats: [
-              StatCardData(
-                  label: 'Hrs worked', value: workHours.toStringAsFixed(1)),
-              StatCardData(label: 'Workouts', value: '${weekWorkouts.length}'),
-              StatCardData(
-                  label: 'Leisure',
-                  value: '${leisureHours.toStringAsFixed(1)}h'),
-            ]),
+            Row(
+              children: [
+                Expanded(
+                  child: StatCard(
+                    pillar: Pillar.work,
+                    label: 'Hrs worked',
+                    value: workHours.toStringAsFixed(1),
+                    unit: 'h',
+                  ),
+                ),
+                const SizedBox(width: AppSpacing.sm),
+                Expanded(
+                  child: StatCard(
+                    pillar: Pillar.health,
+                    label: 'Workouts',
+                    value: '${weekWorkouts.length}',
+                  ),
+                ),
+                const SizedBox(width: AppSpacing.sm),
+                Expanded(
+                  child: StatCard(
+                    pillar: Pillar.leisure,
+                    label: 'Leisure',
+                    value: leisureHours.toStringAsFixed(1),
+                    unit: 'h',
+                  ),
+                ),
+              ],
+            ),
             const SizedBox(height: AppSpacing.md),
             Card(
-              child: Padding(
-                padding: const EdgeInsets.all(AppSpacing.md),
-                child: Text(nudge, style: theme.textTheme.bodyMedium),
+              clipBehavior: Clip.antiAlias,
+              child: IntrinsicHeight(
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Container(width: 4, color: theme.colorScheme.onSurface),
+                    Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.all(AppSpacing.md),
+                        child: Text(nudge, style: theme.textTheme.bodyMedium),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
             const SizedBox(height: AppSpacing.lg),
@@ -289,17 +318,19 @@ class _DashboardScreenState extends State<DashboardScreen> {
 }
 
 class _AxisLabel extends StatelessWidget {
-  const _AxisLabel(this.text, this.theme);
+  const _AxisLabel(this.text, this.pillar);
 
   final String text;
-  final ThemeData theme;
+  final Pillar pillar;
 
   @override
   Widget build(BuildContext context) {
     return Text(
       text,
-      style: theme.textTheme.labelSmall
-          ?.copyWith(color: theme.colorScheme.secondary),
+      style: Theme.of(context)
+          .textTheme
+          .labelSmall
+          ?.copyWith(color: context.pillars.of(pillar)),
     );
   }
 }

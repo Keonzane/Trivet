@@ -4,6 +4,7 @@ import '../models/leisure_log.dart';
 import '../models/media_entry.dart';
 import '../services/storage_service.dart';
 import '../theme.dart';
+import '../widgets/screen_header.dart';
 import '../widgets/add_entry_sheet.dart';
 import '../widgets/dismissible_row.dart';
 import '../widgets/empty_state.dart';
@@ -109,7 +110,6 @@ class _LeisureScreenState extends State<LeisureScreen> {
     final filtered = _entries.where((e) => e.status == _filter).toList();
     final weekTotal =
         _entries.fold<double>(0, (sum, e) => sum + _hoursThisWeek(e.id));
-    final theme = Theme.of(context);
 
     return Scaffold(
       body: SafeArea(
@@ -118,17 +118,14 @@ class _LeisureScreenState extends State<LeisureScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const SizedBox(height: AppSpacing.sm),
-              Text(
-                '${weekTotal.toStringAsFixed(1)}H THIS WEEK',
-                style: theme.textTheme.labelSmall
-                    ?.copyWith(color: theme.colorScheme.secondary),
+              ScreenHeader(
+                caption: '${weekTotal.toStringAsFixed(1)}H THIS WEEK',
+                title: 'Books & media',
               ),
-              const SizedBox(height: AppSpacing.xs),
-              Text('Books & media', style: theme.textTheme.headlineLarge),
               const SizedBox(height: AppSpacing.md),
               SegmentedButton<MediaStatus>(
                 showSelectedIcon: false,
+                expandedInsets: EdgeInsets.zero,
                 segments: const [
                   ButtonSegment(value: MediaStatus.want, label: Text('Want')),
                   ButtonSegment(

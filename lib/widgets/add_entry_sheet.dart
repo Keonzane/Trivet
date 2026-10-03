@@ -406,6 +406,7 @@ class _AddEntrySheetState extends State<_AddEntrySheet> {
         if (widget.initialPillar == null)
           SegmentedButton<Pillar>(
             showSelectedIcon: false,
+            expandedInsets: EdgeInsets.zero,
             emptySelectionAllowed: true,
             segments: const [
               ButtonSegment(value: Pillar.work, label: Text('Work')),

@@ -4,6 +4,7 @@ import '../models/leisure_log.dart';
 import '../models/media_entry.dart';
 import '../services/storage_service.dart';
 import '../theme.dart';
+import '../widgets/screen_header.dart';
 import '../widgets/add_entry_sheet.dart';
 import '../widgets/duration_stepper.dart';
 import '../widgets/pillar_button.dart';
@@ -96,7 +97,10 @@ class _MediaDetailScreenState extends State<MediaDetailScreen> {
     final accent = context.pillars.of(Pillar.leisure);
 
     return Scaffold(
-      appBar: AppBar(title: Text(_entry.title)),
+      appBar: AppBar(
+        title: Text(_entry.title),
+        actions: const [ThemeToggleButton()],
+      ),
       body: _loading
           ? const Center(child: CircularProgressIndicator())
           : SafeArea(
@@ -116,6 +120,7 @@ class _MediaDetailScreenState extends State<MediaDetailScreen> {
                     const SizedBox(height: AppSpacing.sm),
                     SegmentedButton<MediaStatus>(
                       showSelectedIcon: false,
+                      expandedInsets: EdgeInsets.zero,
                       segments: const [
                         ButtonSegment(
                             value: MediaStatus.want, label: Text('Want')),

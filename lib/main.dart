@@ -7,10 +7,13 @@ import 'screens/dashboard_screen.dart';
 import 'screens/health_screen.dart';
 import 'screens/leisure_screen.dart';
 import 'screens/work_screen.dart';
+import 'services/theme_controller.dart';
 import 'theme.dart';
 import 'widgets/app_nav.dart';
 
-void main() {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await ThemeController.instance.load();
   runApp(
     DevicePreview(
       enabled: !kReleaseMode,
@@ -24,15 +27,18 @@ class TrivetApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Trivet',
-      debugShowCheckedModeBanner: false,
-      locale: DevicePreview.locale(context),
-      builder: DevicePreview.appBuilder,
-      theme: appTheme,
-      darkTheme: appDarkTheme,
-      themeMode: ThemeMode.system,
-      home: const _AppShell(),
+    return ValueListenableBuilder<ThemeMode>(
+      valueListenable: ThemeController.instance,
+      builder: (context, themeMode, _) => MaterialApp(
+        title: 'Trivet',
+        debugShowCheckedModeBanner: false,
+        locale: DevicePreview.locale(context),
+        builder: DevicePreview.appBuilder,
+        theme: appTheme,
+        darkTheme: appDarkTheme,
+        themeMode: themeMode,
+        home: const _AppShell(),
+      ),
     );
   }
 }

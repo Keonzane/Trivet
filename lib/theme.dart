@@ -240,11 +240,13 @@ ThemeData _buildTheme({
     segmentedButtonTheme: SegmentedButtonThemeData(
       style: SegmentedButton.styleFrom(
         backgroundColor: surface,
-        selectedBackgroundColor: onSurface,
-        selectedForegroundColor: surface,
+        selectedBackgroundColor: outlineVariant,
+        selectedForegroundColor: onSurface,
         foregroundColor: onSurface,
-        side: BorderSide(color: outlineVariant),
+        side: BorderSide(color: outline),
         textStyle: textTheme.labelLarge,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        visualDensity: VisualDensity.compact,
       ),
     ),
     dividerColor: outlineVariant,

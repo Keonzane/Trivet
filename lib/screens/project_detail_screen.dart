@@ -4,6 +4,7 @@ import '../models/project.dart';
 import '../models/work_log.dart';
 import '../services/storage_service.dart';
 import '../theme.dart';
+import '../widgets/screen_header.dart';
 import '../widgets/add_entry_sheet.dart';
 import '../widgets/date_field.dart';
 import '../widgets/pillar_button.dart';
@@ -97,7 +98,10 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
     final lastLogged = _lastLoggedDate;
 
     return Scaffold(
-      appBar: AppBar(title: Text(_project.title)),
+      appBar: AppBar(
+        title: Text(_project.title),
+        actions: const [ThemeToggleButton()],
+      ),
       body: _loading
           ? const Center(child: CircularProgressIndicator())
           : SafeArea(
@@ -125,6 +129,7 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
                     const SizedBox(height: AppSpacing.sm),
                     SegmentedButton<ProjectStatus>(
                       showSelectedIcon: false,
+                      expandedInsets: EdgeInsets.zero,
                       segments: const [
                         ButtonSegment(
                             value: ProjectStatus.active, label: Text('Active')),

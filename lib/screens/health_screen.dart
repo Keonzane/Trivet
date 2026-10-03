@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../models/workout.dart';
 import '../services/storage_service.dart';
 import '../theme.dart';
+import '../widgets/screen_header.dart';
 import '../widgets/add_entry_sheet.dart';
 import '../widgets/date_field.dart';
 import '../widgets/dismissible_row.dart';
@@ -11,6 +12,7 @@ import '../widgets/pillar_button.dart';
 import '../widgets/stat_card.dart';
 import '../widgets/weekly_bar_chart.dart';
 import '../widgets/workout_row.dart';
+import 'all_workouts_screen.dart';
 
 class HealthScreen extends StatefulWidget {
   const HealthScreen({super.key});
@@ -64,6 +66,13 @@ class _HealthScreenState extends State<HealthScreen> {
       ];
     });
     await _store.save(_workouts);
+  }
+
+  Future<void> _openAllWorkouts() async {
+    await Navigator.of(context).push(
+      MaterialPageRoute(builder: (context) => const AllWorkoutsScreen()),
+    );
+    await _load();
   }
 
   Future<void> _deleteWorkout(Workout w) async {
@@ -141,19 +150,33 @@ class _HealthScreenState extends State<HealthScreen> {
         child: ListView(
           padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
           children: [
-            const SizedBox(height: AppSpacing.sm),
-            Text(
-              '${doneThisWeek.length} SESSIONS THIS WEEK',
-              style: theme.textTheme.labelSmall
-                  ?.copyWith(color: theme.colorScheme.secondary),
+            ScreenHeader(
+              caption:
+                  '${doneThisWeek.length} OF ${weekWorkouts.length} SESSIONS DONE',
+              title: 'Workouts',
             ),
-            const SizedBox(height: AppSpacing.xs),
-            Text('Workouts', style: theme.textTheme.headlineLarge),
             const SizedBox(height: AppSpacing.md),
-            StatCardRow(stats: [
-              StatCardData(label: 'Streak', value: '$_streakDays days'),
-              StatCardData(label: 'This week', value: '$weekMinutes min'),
-            ]),
+            Row(
+              children: [
+                Expanded(
+                  child: StatCard(
+                    pillar: Pillar.health,
+                    label: 'Streak',
+                    value: '$_streakDays',
+                    unit: _streakDays == 1 ? 'day' : 'days',
+                  ),
+                ),
+                const SizedBox(width: AppSpacing.sm),
+                Expanded(
+                  child: StatCard(
+                    pillar: Pillar.health,
+                    label: 'This week',
+                    value: '$weekMinutes',
+                    unit: 'min',
+                  ),
+                ),
+              ],
+            ),
             const SizedBox(height: AppSpacing.lg),
             if (todays.isNotEmpty) ...[
               Text('TODAY',
@@ -167,9 +190,17 @@ class _HealthScreenState extends State<HealthScreen> {
               ],
               const SizedBox(height: AppSpacing.sm),
             ],
-            Text('MINUTES PER DAY',
-                style: theme.textTheme.labelSmall
-                    ?.copyWith(color: theme.colorScheme.secondary)),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text('MINUTES PER DAY',
+                    style: theme.textTheme.labelSmall
+                        ?.copyWith(color: theme.colorScheme.secondary)),
+                Text('$weekMinutes TOTAL',
+                    style: theme.textTheme.labelSmall
+                        ?.copyWith(color: theme.colorScheme.secondary)),
+              ],
+            ),
             const SizedBox(height: AppSpacing.sm),
             Card(
               child: Padding(
@@ -207,6 +238,13 @@ class _HealthScreenState extends State<HealthScreen> {
                 icon: Icons.favorite_outline,
               ),
             const SizedBox(height: AppSpacing.md),
+            if (_workouts.isNotEmpty) ...[
+              OutlinedButton(
+                onPressed: _openAllWorkouts,
+                child: Text('See all workouts (${_workouts.length})'),
+              ),
+              const SizedBox(height: AppSpacing.sm),
+            ],
             PillarButton(
               pillar: Pillar.health,
               label: '+ Log workout',

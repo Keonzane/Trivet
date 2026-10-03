@@ -2,55 +2,68 @@ import 'package:flutter/material.dart';
 
 import '../theme.dart';
 
-class StatCardData {
+class StatCard extends StatelessWidget {
+  const StatCard({
+    super.key,
+    required this.pillar,
+    required this.label,
+    required this.value,
+    this.unit,
+  });
+
+  final Pillar pillar;
   final String label;
   final String value;
 
-  const StatCardData({required this.label, required this.value});
-}
-
-class StatCardRow extends StatelessWidget {
-  const StatCardRow({super.key, required this.stats});
-
-  final List<StatCardData> stats;
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(AppSpacing.md),
-        child: Row(
-          children: [
-            for (var i = 0; i < stats.length; i++) ...[
-              if (i > 0) const SizedBox(width: AppSpacing.md),
-              Expanded(child: _Stat(data: stats[i])),
-            ],
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _Stat extends StatelessWidget {
-  const _Stat({required this.data});
-
-  final StatCardData data;
+  final String? unit;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          data.label.toUpperCase(),
-          style: theme.textTheme.labelSmall
-              ?.copyWith(color: theme.colorScheme.secondary),
-        ),
-        const SizedBox(height: AppSpacing.xs),
-        Text(data.value, style: theme.textTheme.headlineSmall),
-      ],
+    final grey = theme.colorScheme.secondary;
+    return Card(
+      clipBehavior: Clip.antiAlias,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(height: 3, color: context.pillars.of(pillar)),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(
+              AppSpacing.sm + AppSpacing.xs,
+              AppSpacing.sm,
+              AppSpacing.sm,
+              AppSpacing.sm + AppSpacing.xs,
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label.toUpperCase(),
+                  style: theme.textTheme.labelSmall?.copyWith(color: grey),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: AppSpacing.xs),
+                Text.rich(
+                  TextSpan(
+                    text: value,
+                    style: theme.textTheme.headlineSmall,
+                    children: [
+                      if (unit != null)
+                        TextSpan(
+                          text: ' $unit',
+                          style:
+                              theme.textTheme.labelSmall?.copyWith(color: grey),
+                        ),
+                    ],
+                  ),
+                  maxLines: 1,
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
