@@ -4,6 +4,7 @@ import '../models/workout.dart';
 import '../services/storage_service.dart';
 import '../theme.dart';
 import '../widgets/add_entry_sheet.dart';
+import '../widgets/dismissible_row.dart';
 import '../widgets/empty_state.dart';
 import '../widgets/pillar_button.dart';
 import '../widgets/pillar_card.dart';
@@ -52,6 +53,13 @@ class _HealthScreenState extends State<HealthScreen> {
         await _store.save(_workouts);
       },
     );
+  }
+
+  Future<void> _deleteWorkout(Workout w) async {
+    setState(() {
+      _workouts = _workouts.where((x) => x.id != w.id).toList();
+    });
+    await _store.save(_workouts);
   }
 
   int get _streakDays {
@@ -119,13 +127,19 @@ class _HealthScreenState extends State<HealthScreen> {
                       ?.copyWith(color: theme.colorScheme.secondary)),
               const SizedBox(height: AppSpacing.sm),
               for (final w in todays) ...[
-                PillarCard(
-                  pillar: Pillar.health,
+                DismissibleRow(
+                  itemKey: ValueKey(w.id),
                   title: w.label,
-                  subtitle:
-                      'Gym · ${TimeOfDay.fromDateTime(w.date).format(context)}',
-                  meta: '${w.durationMinutes} min',
-                  onTap: () => _logWorkout(w),
+                  confirmMessage: 'This removes this logged session.',
+                  onDelete: () => _deleteWorkout(w),
+                  child: PillarCard(
+                    pillar: Pillar.health,
+                    title: w.label,
+                    subtitle:
+                        'Gym · ${TimeOfDay.fromDateTime(w.date).format(context)}',
+                    meta: '${w.durationMinutes} min',
+                    onTap: () => _logWorkout(w),
+                  ),
                 ),
                 const SizedBox(height: AppSpacing.sm),
               ],
@@ -149,13 +163,19 @@ class _HealthScreenState extends State<HealthScreen> {
                       ?.copyWith(color: theme.colorScheme.secondary)),
               const SizedBox(height: AppSpacing.sm),
               for (final w in earlier) ...[
-                PillarCard(
-                  pillar: Pillar.health,
+                DismissibleRow(
+                  itemKey: ValueKey(w.id),
                   title: w.label,
-                  subtitle:
-                      'Gym · ${_weekday(w.date)} ${TimeOfDay.fromDateTime(w.date).format(context)}',
-                  meta: '${w.durationMinutes} min',
-                  onTap: () => _logWorkout(w),
+                  confirmMessage: 'This removes this logged session.',
+                  onDelete: () => _deleteWorkout(w),
+                  child: PillarCard(
+                    pillar: Pillar.health,
+                    title: w.label,
+                    subtitle:
+                        'Gym · ${_weekday(w.date)} ${TimeOfDay.fromDateTime(w.date).format(context)}',
+                    meta: '${w.durationMinutes} min',
+                    onTap: () => _logWorkout(w),
+                  ),
                 ),
                 const SizedBox(height: AppSpacing.sm),
               ],

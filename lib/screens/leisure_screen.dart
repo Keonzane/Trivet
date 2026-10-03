@@ -5,6 +5,7 @@ import '../models/media_entry.dart';
 import '../services/storage_service.dart';
 import '../theme.dart';
 import '../widgets/add_entry_sheet.dart';
+import '../widgets/dismissible_row.dart';
 import '../widgets/empty_state.dart';
 import '../widgets/media_card.dart';
 import '../widgets/pillar_button.dart';
@@ -67,6 +68,15 @@ class _LeisureScreenState extends State<LeisureScreen> {
         await _logStore.save(_logs);
       },
     );
+  }
+
+  Future<void> _deleteTitle(MediaEntry e) async {
+    setState(() {
+      _entries = _entries.where((x) => x.id != e.id).toList();
+      _logs = _logs.where((l) => l.mediaId != e.id).toList();
+    });
+    await _mediaStore.save(_entries);
+    await _logStore.save(_logs);
   }
 
   Future<void> _openDetail(MediaEntry entry) async {
@@ -147,11 +157,18 @@ class _LeisureScreenState extends State<LeisureScreen> {
                         itemBuilder: (context, i) {
                           final e = filtered[i];
                           final hours = _hoursThisWeek(e.id);
-                          return MediaCard(
-                            entry: e,
-                            progress: '${hours.toStringAsFixed(1)} h',
-                            rating: e.rating,
-                            onTap: () => _openDetail(e),
+                          return DismissibleRow(
+                            itemKey: ValueKey(e.id),
+                            title: e.title,
+                            confirmMessage:
+                                'This also removes every logged minute for this title.',
+                            onDelete: () => _deleteTitle(e),
+                            child: MediaCard(
+                              entry: e,
+                              progress: '${hours.toStringAsFixed(1)} h',
+                              rating: e.rating,
+                              onTap: () => _openDetail(e),
+                            ),
                           );
                         },
                       ),

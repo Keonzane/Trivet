@@ -5,6 +5,7 @@ import '../models/work_log.dart';
 import '../services/storage_service.dart';
 import '../theme.dart';
 import '../widgets/add_entry_sheet.dart';
+import '../widgets/dismissible_row.dart';
 import '../widgets/empty_state.dart';
 import '../widgets/pillar_button.dart';
 import '../widgets/pillar_card.dart';
@@ -66,6 +67,15 @@ class _WorkScreenState extends State<WorkScreen> {
     );
   }
 
+  Future<void> _deleteProject(Project p) async {
+    setState(() {
+      _projects = _projects.where((x) => x.id != p.id).toList();
+      _logs = _logs.where((l) => l.projectId != p.id).toList();
+    });
+    await _projectStore.save(_projects);
+    await _workLogStore.save(_logs);
+  }
+
   @override
   Widget build(BuildContext context) {
     if (_loading) {
@@ -120,12 +130,19 @@ class _WorkScreenState extends State<WorkScreen> {
                         itemBuilder: (context, i) {
                           final p = filtered[i];
                           final hours = _hoursThisWeek(p.id);
-                          return PillarCard(
-                            pillar: Pillar.work,
+                          return DismissibleRow(
+                            itemKey: ValueKey(p.id),
                             title: p.title,
-                            subtitle: p.subtitle,
-                            meta: '${hours.toStringAsFixed(1)} h',
-                            onTap: () => _addHours(p),
+                            confirmMessage:
+                                'This also removes every logged hour for this project.',
+                            onDelete: () => _deleteProject(p),
+                            child: PillarCard(
+                              pillar: Pillar.work,
+                              title: p.title,
+                              subtitle: p.subtitle,
+                              meta: '${hours.toStringAsFixed(1)} h',
+                              onTap: () => _addHours(p),
+                            ),
                           );
                         },
                       ),
