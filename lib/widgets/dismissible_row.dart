@@ -3,12 +3,6 @@ import 'package:flutter/material.dart';
 import '../theme.dart';
 import 'confirm_delete.dart';
 
-/// Swipe-right-to-left-to-delete, with a confirmation dialog first. The
-/// one place delete lives in this app: there's no delete button on any
-/// row or on the media detail screen, only this gesture. That keeps
-/// delete out of the way of the tap target every row already has (tap to
-/// log more, or to open detail), at the cost of being easy to miss if you
-/// don't already know the gesture — a real trade-off, not a shortcut.
 class DismissibleRow extends StatelessWidget {
   const DismissibleRow({
     super.key,

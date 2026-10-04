@@ -1,8 +1,5 @@
 import 'package:flutter/material.dart';
 
-/// One confirmation dialog shared by every delete in the app, so the
-/// wording and shape stay consistent rather than three screens each
-/// writing a slightly different `AlertDialog`.
 Future<bool> confirmDelete({
   required BuildContext context,
   required String title,

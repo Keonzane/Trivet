@@ -38,9 +38,8 @@ class DurationStepper extends StatelessWidget {
         children: [
           IconButton(
             icon: const Icon(Icons.remove),
-            onPressed: value - step >= min
-                ? () => onChanged(value - step)
-                : null,
+            onPressed:
+                value - step >= min ? () => onChanged(value - step) : null,
           ),
           Expanded(
             child: Center(

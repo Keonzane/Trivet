@@ -14,8 +14,7 @@ class ThemeController extends ValueNotifier<ThemeMode> {
       final saved = prefs.getString(_key);
       if (saved != null) value = ThemeMode.values.byName(saved);
     } catch (_) {
-      // An unreadable saved value just leaves the app following the
-      // phone, the same as a first launch.
+      value = ThemeMode.system;
     }
   }
 

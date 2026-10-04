@@ -63,6 +63,6 @@ class Workout {
         durationMinutes: map['durationMinutes'] as int,
         date: DateTime.parse(map['date'] as String),
         notes: map['notes'] as String? ?? '',
-        done: map['done'] as bool? ?? false,
+        done: map['done'] as bool? ?? true,
       );
 }

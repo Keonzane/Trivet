@@ -72,19 +72,16 @@ class _AddEntrySheet extends StatefulWidget {
 class _AddEntrySheetState extends State<_AddEntrySheet> {
   Pillar? _pillar;
 
-  // Work fields.
   double _workHours = 1.0;
   DateTime _workDate = DateTime.now();
   bool _workTitleError = false;
   late final TextEditingController _workNewTitleController;
 
-  // Health fields.
   late WorkoutType _healthType;
   late int _healthMinutes;
   late DateTime _healthDate;
   late final TextEditingController _healthNotesController;
 
-  // Leisure fields.
   late MediaType _leisureType;
   int _leisureMinutes = 30;
   DateTime _leisureDate = DateTime.now();

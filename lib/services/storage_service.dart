@@ -27,11 +27,7 @@ class ListStore<T> {
       try {
         items.add(fromMap(jsonDecode(s) as Map<String, dynamic>));
       } catch (_) {
-        // One corrupted record (malformed JSON, a missing field, an enum
-        // value that no longer exists) used to throw here and take the
-        // whole list down with it — every other record for that model
-        // never loaded, and the screen sat on its spinner forever. Now a
-        // bad record is just dropped; everything else still loads.
+        continue;
       }
     }
     return items;

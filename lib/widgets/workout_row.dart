@@ -44,10 +44,8 @@ class WorkoutRow extends StatelessWidget {
                       Text(
                         workout.label,
                         style: theme.textTheme.bodyMedium?.copyWith(
-                          decoration:
-                              workout.done ? TextDecoration.lineThrough : null,
-                          color:
-                              workout.done ? theme.colorScheme.secondary : null,
+                          decoration: workout.done ? TextDecoration.lineThrough : null,
+                          color: workout.done ? theme.colorScheme.secondary : null,
                         ),
                       ),
                       const SizedBox(height: AppSpacing.xs),
@@ -62,8 +60,7 @@ class WorkoutRow extends StatelessWidget {
               ),
               Padding(
                 padding: const EdgeInsets.only(right: AppSpacing.sm),
-                child: Text('${workout.durationMinutes} min',
-                    style: theme.textTheme.labelLarge),
+                child: Text('${workout.durationMinutes} min', style: theme.textTheme.labelLarge),
               ),
             ],
           ),

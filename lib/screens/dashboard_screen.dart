@@ -91,7 +91,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
     final nudge = _nudgeFor(
       workHours: workHours,
-      workoutCount: weekWorkouts.length,
+      healthHours: healthHours,
       leisureHours: leisureHours,
     );
 
@@ -149,8 +149,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 Expanded(
                   child: StatCard(
                     pillar: Pillar.health,
-                    label: 'Workouts',
-                    value: '${weekWorkouts.length}',
+                    label: 'Health',
+                    value: healthHours.toStringAsFixed(1),
+                    unit: 'h',
                   ),
                 ),
                 const SizedBox(width: AppSpacing.sm),
@@ -273,16 +274,19 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   String _nudgeFor({
     required double workHours,
-    required int workoutCount,
+    required double healthHours,
     required double leisureHours,
   }) {
-    if (workHours == 0 && workoutCount == 0 && leisureHours == 0) {
+    if (workHours == 0 && healthHours == 0 && leisureHours == 0) {
       return 'Nothing logged yet this week.';
     }
-    if (workoutCount == 0) {
-      return 'No workouts logged yet this week.';
-    }
-    final thinnest = workHours <= leisureHours ? 'Work' : 'Leisure';
+    final hours = {
+      'Work': workHours,
+      'Health': healthHours,
+      'Leisure': leisureHours,
+    };
+    final thinnest =
+        hours.entries.reduce((a, b) => b.value < a.value ? b : a).key;
     return '$thinnest is thin this week.';
   }
 
