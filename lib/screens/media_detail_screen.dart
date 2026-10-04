@@ -7,6 +7,7 @@ import '../theme.dart';
 import '../widgets/screen_header.dart';
 import '../widgets/add_entry_sheet.dart';
 import '../widgets/duration_stepper.dart';
+import '../widgets/number_stepper.dart';
 import '../widgets/pillar_button.dart';
 
 class MediaDetailScreen extends StatefulWidget {
@@ -170,43 +171,34 @@ class _MediaDetailScreenState extends State<MediaDetailScreen> {
           _caption(theme, 'DURATION'),
           const SizedBox(height: AppSpacing.sm),
           DurationStepper(
-            value: _entry.durationMinutes,
-            step: 5,
-            unit: 'min',
-            onChanged: (v) =>
-                _update((e) => e.copyWith(durationMinutes: v.toInt())),
+            minutes: _entry.durationMinutes,
+            onChanged: (v) => _update((e) => e.copyWith(durationMinutes: v)),
           ),
           if (_entry.type == MediaType.book) ...[
             const SizedBox(height: AppSpacing.md),
             _caption(theme, 'PAGES'),
             const SizedBox(height: AppSpacing.sm),
-            DurationStepper(
+            NumberStepper(
               value: _entry.pages,
-              step: 1,
-              unit: 'pages',
-              onChanged: (v) => _update((e) => e.copyWith(pages: v.toInt())),
+              onChanged: (v) => _update((e) => e.copyWith(pages: v)),
             ),
           ],
           if (_entry.type == MediaType.series) ...[
             const SizedBox(height: AppSpacing.md),
             _caption(theme, 'SEASON'),
             const SizedBox(height: AppSpacing.sm),
-            DurationStepper(
+            NumberStepper(
               value: _entry.season,
-              step: 1,
-              unit: 'season',
               min: 1,
-              onChanged: (v) => _update((e) => e.copyWith(season: v.toInt())),
+              onChanged: (v) => _update((e) => e.copyWith(season: v)),
             ),
             const SizedBox(height: AppSpacing.md),
             _caption(theme, 'EPISODE'),
             const SizedBox(height: AppSpacing.sm),
-            DurationStepper(
+            NumberStepper(
               value: _entry.episode,
-              step: 1,
-              unit: 'episode',
               min: 1,
-              onChanged: (v) => _update((e) => e.copyWith(episode: v.toInt())),
+              onChanged: (v) => _update((e) => e.copyWith(episode: v)),
             ),
           ],
         ];

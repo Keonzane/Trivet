@@ -1,55 +1,37 @@
 import 'package:flutter/material.dart';
+import '../theme.dart';
+import 'number_stepper.dart';
 
 class DurationStepper extends StatelessWidget {
-  const DurationStepper({
-    super.key,
-    required this.value,
-    required this.onChanged,
-    required this.step,
-    required this.unit,
-    this.min = 0,
-  });
+  const DurationStepper(
+      {super.key, required this.minutes, required this.onChanged});
 
-  final num value;
-  final ValueChanged<num> onChanged;
-  final num step;
-  final String unit;
-  final num min;
-
-  String get _display {
-    if (value == value.roundToDouble()) {
-      return '${value.toInt()} $unit';
-    }
-    return '${value.toStringAsFixed(1)} $unit';
-  }
+  final int minutes;
+  final ValueChanged<int> onChanged;
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Container(
-      height: 48,
-      decoration: BoxDecoration(
-        border: Border.all(color: theme.colorScheme.outlineVariant),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Row(
-        children: [
-          IconButton(
-            icon: const Icon(Icons.remove),
-            onPressed:
-                value - step >= min ? () => onChanged(value - step) : null,
+    final hours = minutes ~/ 60;
+    final mins = minutes % 60;
+    return Row(
+      children: [
+        Expanded(
+          child: NumberStepper(
+            value: hours,
+            unit: 'h',
+            onChanged: (h) => onChanged(h * 60 + mins),
           ),
-          Expanded(
-            child: Center(
-              child: Text(_display, style: theme.textTheme.labelLarge),
-            ),
+        ),
+        const SizedBox(width: AppSpacing.sm),
+        Expanded(
+          child: NumberStepper(
+            value: mins,
+            unit: 'min',
+            min: hours > 0 ? -1 : 0,
+            onChanged: (m) => onChanged(hours * 60 + m),
           ),
-          IconButton(
-            icon: const Icon(Icons.add),
-            onPressed: () => onChanged(value + step),
-          ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }

@@ -72,7 +72,7 @@ class _AddEntrySheet extends StatefulWidget {
 class _AddEntrySheetState extends State<_AddEntrySheet> {
   Pillar? _pillar;
 
-  double _workHours = 1.0;
+  int _workMinutes = 60;
   DateTime _workDate = DateTime.now();
   bool _workTitleError = false;
   late final TextEditingController _workNewTitleController;
@@ -142,7 +142,7 @@ class _AddEntrySheetState extends State<_AddEntrySheet> {
   void _save() {
     switch (_pillar) {
       case null:
-        return; // Save is disabled in build() until a pillar is chosen.
+        return;
       case Pillar.work:
         Project project;
         if (widget.initialProject != null) {
@@ -165,7 +165,7 @@ class _AddEntrySheetState extends State<_AddEntrySheet> {
           WorkLog(
             id: DateTime.now().microsecondsSinceEpoch.toString(),
             projectId: project.id,
-            hours: _workHours,
+            hours: _workMinutes / 60,
             date: _workDate,
           ),
         );
@@ -247,10 +247,8 @@ class _AddEntrySheetState extends State<_AddEntrySheet> {
           LabelledField(
             label: 'Duration',
             child: DurationStepper(
-              value: _workHours,
-              step: 0.5,
-              unit: 'h',
-              onChanged: (v) => setState(() => _workHours = v.toDouble()),
+              minutes: _workMinutes,
+              onChanged: (v) => setState(() => _workMinutes = v),
             ),
           ),
           LabelledField(
@@ -279,10 +277,8 @@ class _AddEntrySheetState extends State<_AddEntrySheet> {
           LabelledField(
             label: 'Duration',
             child: DurationStepper(
-              value: _healthMinutes,
-              step: 5,
-              unit: 'min',
-              onChanged: (v) => setState(() => _healthMinutes = v.toInt()),
+              minutes: _healthMinutes,
+              onChanged: (v) => setState(() => _healthMinutes = v),
             ),
           ),
           LabelledField(
@@ -337,10 +333,8 @@ class _AddEntrySheetState extends State<_AddEntrySheet> {
           LabelledField(
             label: 'Duration',
             child: DurationStepper(
-              value: _leisureMinutes,
-              step: 5,
-              unit: 'min',
-              onChanged: (v) => setState(() => _leisureMinutes = v.toInt()),
+              minutes: _leisureMinutes,
+              onChanged: (v) => setState(() => _leisureMinutes = v),
             ),
           ),
           LabelledField(

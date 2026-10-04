@@ -4,10 +4,10 @@ import 'package:google_fonts/google_fonts.dart';
 enum Pillar { work, health, leisure }
 
 class AppSpacing {
-  static const double xs = 4;
-  static const double sm = 8;
-  static const double md = 16;
-  static const double lg = 24;
+  static const double xs = 4; // inside components only
+  static const double sm = 8; // base unit, list gaps
+  static const double md = 16; // screen edge padding
+  static const double lg = 24; // between sections
 }
 
 @immutable
@@ -36,17 +36,17 @@ class PillarColors extends ThemeExtension<PillarColors> {
   }
 
   static const light = PillarColors(
-    work: Color(0xFF3D5A73),
-    health: Color(0xFF4F7942),
-    leisure: Color(0xFFB4531F),
+    work: Color(0xFF3D5A73), // Slate
+    health: Color(0xFF4F7942), // Moss
+    leisure: Color(0xFFB4531F), // Ember
     onPillar: Colors.white,
   );
 
   static const dark = PillarColors(
-    work: Color(0xFF7FA3C4),
-    health: Color(0xFF7FB36F),
-    leisure: Color(0xFFE58A5A),
-    onPillar: Color(0xFF1C1E1F),
+    work: Color(0xFF7FA3C4), // Slate (dark)
+    health: Color(0xFF7FB36F), // Moss (dark)
+    leisure: Color(0xFFE58A5A), // Ember (dark)
+    onPillar: Color(0xFF1C1E1F), // Ink — pillar fills are light in dark mode
   );
 
   @override
