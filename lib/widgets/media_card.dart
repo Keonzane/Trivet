@@ -30,11 +30,18 @@ class MediaCard extends StatelessWidget {
   }
 
   String get _subtitle {
-    if (entry.type == MediaType.series &&
-        entry.status == MediaStatus.inProgress) {
-      return 'Series · Season ${entry.currentSeason} · Episode ${entry.currentEpisode}';
+    if (entry.status == MediaStatus.inProgress) {
+      switch (entry.type) {
+        case MediaType.book:
+          return 'Book · Page ${entry.currentPage} / ${entry.totalPages}';
+        case MediaType.series:
+          return 'Series · Season ${entry.currentSeason} · Episode ${entry.currentEpisode}';
+        case MediaType.film:
+        case MediaType.game:
+          break;
+      }
     }
-    return '${entry.type.label} · ${entry.status.label}';
+    return entry.type.label;
   }
 
   String _hm(int minutes) {

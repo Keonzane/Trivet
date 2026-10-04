@@ -17,31 +17,17 @@ extension MediaTypeLabel on MediaType {
   }
 }
 
-extension MediaStatusLabel on MediaStatus {
-  String get label {
-    switch (this) {
-      case MediaStatus.want:
-        return 'Want to start';
-      case MediaStatus.inProgress:
-        return 'In progress';
-      case MediaStatus.done:
-        return 'Done';
-    }
-  }
-}
-
 class MediaEntry {
   final String id;
   final String title;
   final MediaType type;
   final MediaStatus status;
-  final int? rating; // 1-5, only meaningful once done
-
-  final int durationMinutes; // time spent: books and games
+  final int? rating;
+  final int durationMinutes;
   final int totalPages;
   final int currentPage;
-  final int totalMinutes; // runtime: films and series
-  final int stoppedMinutes; // where you stopped: films and series
+  final int totalMinutes;
+  final int stoppedMinutes;
   final int totalSeasons;
   final int currentSeason;
   final int totalEpisodes;
@@ -67,8 +53,9 @@ class MediaEntry {
     this.notes = '',
   });
 
-  int get trackedMinutes =>
-      type == MediaType.film || type == MediaType.series ? stoppedMinutes : durationMinutes;
+  int get trackedMinutes => type == MediaType.film || type == MediaType.series
+      ? stoppedMinutes
+      : durationMinutes;
 
   MediaEntry withTrackedMinutes(int minutes) =>
       type == MediaType.film || type == MediaType.series
