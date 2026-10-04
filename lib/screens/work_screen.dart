@@ -10,6 +10,7 @@ import '../widgets/dismissible_row.dart';
 import '../widgets/empty_state.dart';
 import '../widgets/pillar_button.dart';
 import '../widgets/pillar_card.dart';
+import '../widgets/sectioned_list.dart';
 import 'project_detail_screen.dart';
 
 class WorkScreen extends StatefulWidget {
@@ -25,7 +26,6 @@ class _WorkScreenState extends State<WorkScreen> {
 
   List<Project> _projects = [];
   List<WorkLog> _logs = [];
-  ProjectStatus _filter = ProjectStatus.active;
   bool _loading = true;
 
   @override
@@ -136,7 +136,6 @@ class _WorkScreenState extends State<WorkScreen> {
       return const Center(child: CircularProgressIndicator());
     }
 
-    final filtered = _projects.where((p) => p.status == _filter).toList();
     final activeCount =
         _projects.where((p) => p.status == ProjectStatus.active).length;
     final weekTotal =
@@ -155,53 +154,41 @@ class _WorkScreenState extends State<WorkScreen> {
                 title: 'Projects',
               ),
               const SizedBox(height: AppSpacing.md),
-              SegmentedButton<ProjectStatus>(
-                showSelectedIcon: false,
-                expandedInsets: EdgeInsets.zero,
-                segments: const [
-                  ButtonSegment(
-                      value: ProjectStatus.active, label: Text('Active')),
-                  ButtonSegment(
-                      value: ProjectStatus.paused, label: Text('Paused')),
-                  ButtonSegment(value: ProjectStatus.done, label: Text('Done')),
-                ],
-                selected: {_filter},
-                onSelectionChanged: (s) => setState(() => _filter = s.first),
-              ),
-              const SizedBox(height: AppSpacing.md),
               Expanded(
-                child: filtered.isEmpty
+                child: _projects.isEmpty
                     ? EmptyState(
-                        message: _projects.isEmpty
-                            ? 'No projects yet. Add one to start logging hours.'
-                            : 'Nothing in ${_filter.name} yet.',
+                        message:
+                            'No projects yet. Add one to start logging hours.',
                         icon: Icons.work_outline,
-                        actionLabel: _projects.isEmpty ? '+ Add project' : null,
-                        onAction:
-                            _projects.isEmpty ? () => _addHours(null) : null,
+                        actionLabel: '+ Add project',
+                        onAction: () => _addHours(null),
                       )
-                    : ListView.separated(
-                        itemCount: filtered.length,
-                        separatorBuilder: (_, __) =>
-                            const SizedBox(height: AppSpacing.sm),
-                        itemBuilder: (context, i) {
-                          final p = filtered[i];
-                          final hours = _hoursThisWeek(p.id);
-                          return DismissibleRow(
-                            itemKey: ValueKey(p.id),
-                            title: p.title,
-                            confirmMessage:
-                                'This also removes every logged hour for this project.',
-                            onDelete: () => _deleteProject(p),
-                            child: PillarCard(
-                              pillar: Pillar.work,
-                              title: p.title,
-                              subtitle: _rowSubtitle(p),
-                              meta: '${hours.toStringAsFixed(1)} h',
-                              onTap: () => _openDetail(p),
-                            ),
-                          );
+                    : SectionedList<ProjectStatus>(
+                        sections: ProjectStatus.values,
+                        initial: ProjectStatus.active,
+                        labelOf: (s) => switch (s) {
+                          ProjectStatus.active => 'Active',
+                          ProjectStatus.paused => 'Paused',
+                          ProjectStatus.done => 'Done',
                         },
+                        itemsOf: (s) => [
+                          for (final p in _projects.where((p) => p.status == s))
+                            DismissibleRow(
+                              itemKey: ValueKey(p.id),
+                              title: p.title,
+                              confirmMessage:
+                                  'This also removes every logged hour for this project.',
+                              onDelete: () => _deleteProject(p),
+                              child: PillarCard(
+                                pillar: Pillar.work,
+                                title: p.title,
+                                subtitle: _rowSubtitle(p),
+                                meta:
+                                    '${_hoursThisWeek(p.id).toStringAsFixed(1)} h',
+                                onTap: () => _openDetail(p),
+                              ),
+                            ),
+                        ],
                       ),
               ),
               const SizedBox(height: AppSpacing.md),

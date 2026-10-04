@@ -73,7 +73,10 @@ class _AppShellState extends State<_AppShell> {
     final isWide = MediaQuery.sizeOf(context).width >= 900;
     final nav = AppNav(
       selectedIndex: _index,
-      onSelected: (i) => setState(() => _index = i),
+      onSelected: (i) => setState(() {
+        _index = i;
+        _leisureFilter = MediaStatus.want;
+      }),
     );
 
     if (isWide) {

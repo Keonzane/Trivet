@@ -29,6 +29,14 @@ class MediaCard extends StatelessWidget {
     }
   }
 
+  String get _subtitle {
+    if (entry.type == MediaType.series &&
+        entry.status == MediaStatus.inProgress) {
+      return 'Series · Season ${entry.currentSeason} · Episode ${entry.currentEpisode}';
+    }
+    return '${entry.type.label} · ${entry.status.label}';
+  }
+
   String _hm(int minutes) {
     final h = minutes ~/ 60;
     final m = minutes % 60;
@@ -70,7 +78,7 @@ class MediaCard extends StatelessWidget {
                     if (entry.status != MediaStatus.want) ...[
                       const SizedBox(height: AppSpacing.xs),
                       Text(
-                        '${entry.type.label} · ${entry.status.label}',
+                        _subtitle,
                         style: theme.textTheme.labelSmall
                             ?.copyWith(color: theme.colorScheme.secondary),
                       ),

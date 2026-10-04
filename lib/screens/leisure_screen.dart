@@ -10,6 +10,7 @@ import '../widgets/dismissible_row.dart';
 import '../widgets/empty_state.dart';
 import '../widgets/media_card.dart';
 import '../widgets/pillar_button.dart';
+import '../widgets/sectioned_list.dart';
 import 'media_detail_screen.dart';
 
 class LeisureScreen extends StatefulWidget {
@@ -27,7 +28,6 @@ class _LeisureScreenState extends State<LeisureScreen> {
 
   List<MediaEntry> _entries = [];
   List<LeisureLog> _logs = [];
-  late MediaStatus _filter = widget.initialFilter ?? MediaStatus.want;
   bool _loading = true;
 
   @override
@@ -101,7 +101,6 @@ class _LeisureScreenState extends State<LeisureScreen> {
       return const Center(child: CircularProgressIndicator());
     }
 
-    final filtered = _entries.where((e) => e.status == _filter).toList();
     final weekTotal =
         _entries.fold<double>(0, (sum, e) => sum + _hoursThisWeek(e.id));
 
@@ -117,48 +116,36 @@ class _LeisureScreenState extends State<LeisureScreen> {
                 title: 'Books & media',
               ),
               const SizedBox(height: AppSpacing.md),
-              SegmentedButton<MediaStatus>(
-                showSelectedIcon: false,
-                expandedInsets: EdgeInsets.zero,
-                segments: const [
-                  ButtonSegment(value: MediaStatus.want, label: Text('Want')),
-                  ButtonSegment(
-                      value: MediaStatus.inProgress,
-                      label: Text('In progress')),
-                  ButtonSegment(value: MediaStatus.done, label: Text('Done')),
-                ],
-                selected: {_filter},
-                onSelectionChanged: (s) => setState(() => _filter = s.first),
-              ),
-              const SizedBox(height: AppSpacing.md),
               Expanded(
-                child: filtered.isEmpty
+                child: _entries.isEmpty
                     ? EmptyState(
-                        message: _entries.isEmpty
-                            ? 'No titles yet. Add one to start logging time.'
-                            : 'Nothing here yet.',
+                        message: 'No titles yet. Add one to start tracking it.',
                         icon: Icons.menu_book_outlined,
-                        actionLabel: _entries.isEmpty ? '+ Add title' : null,
-                        onAction: _entries.isEmpty ? _addTitle : null,
+                        actionLabel: '+ Add title',
+                        onAction: _addTitle,
                       )
-                    : ListView.separated(
-                        itemCount: filtered.length,
-                        separatorBuilder: (_, __) =>
-                            const SizedBox(height: AppSpacing.sm),
-                        itemBuilder: (context, i) {
-                          final e = filtered[i];
-                          return DismissibleRow(
-                            itemKey: ValueKey(e.id),
-                            title: e.title,
-                            confirmMessage:
-                                'This also removes every logged minute for this title.',
-                            onDelete: () => _deleteTitle(e),
-                            child: MediaCard(
-                              entry: e,
-                              onTap: () => _openDetail(e),
-                            ),
-                          );
+                    : SectionedList<MediaStatus>(
+                        sections: MediaStatus.values,
+                        initial: widget.initialFilter ?? MediaStatus.want,
+                        labelOf: (s) => switch (s) {
+                          MediaStatus.want => 'Want',
+                          MediaStatus.inProgress => 'In progress',
+                          MediaStatus.done => 'Done',
                         },
+                        itemsOf: (s) => [
+                          for (final e in _entries.where((e) => e.status == s))
+                            DismissibleRow(
+                              itemKey: ValueKey(e.id),
+                              title: e.title,
+                              confirmMessage:
+                                  'This also removes the time recorded for this title.',
+                              onDelete: () => _deleteTitle(e),
+                              child: MediaCard(
+                                entry: e,
+                                onTap: () => _openDetail(e),
+                              ),
+                            ),
+                        ],
                       ),
               ),
               const SizedBox(height: AppSpacing.md),
