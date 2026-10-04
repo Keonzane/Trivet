@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../models/leisure_log.dart';
 import '../models/media_entry.dart';
 import '../models/project.dart';
 import '../models/work_log.dart';
@@ -16,10 +15,9 @@ Future<void> showAddEntrySheet({
   Pillar? initialPillar,
   Project? initialProject,
   Workout? initialWorkout,
-  MediaEntry? initialMediaEntry,
   void Function(Project project, WorkLog log)? onSaveWork,
   void Function(Workout workout)? onSaveHealth,
-  void Function(MediaEntry entry, LeisureLog? log)? onSaveLeisure,
+  void Function(MediaEntry entry)? onSaveLeisure,
 }) {
   assert(
     switch (initialPillar) {
@@ -38,7 +36,6 @@ Future<void> showAddEntrySheet({
       initialPillar: initialPillar,
       initialProject: initialProject,
       initialWorkout: initialWorkout,
-      initialMediaEntry: initialMediaEntry,
       onSaveWork: onSaveWork,
       onSaveHealth: onSaveHealth,
       onSaveLeisure: onSaveLeisure,
@@ -51,7 +48,6 @@ class _AddEntrySheet extends StatefulWidget {
     required this.initialPillar,
     required this.initialProject,
     required this.initialWorkout,
-    required this.initialMediaEntry,
     required this.onSaveWork,
     required this.onSaveHealth,
     required this.onSaveLeisure,
@@ -60,10 +56,9 @@ class _AddEntrySheet extends StatefulWidget {
   final Pillar? initialPillar;
   final Project? initialProject;
   final Workout? initialWorkout;
-  final MediaEntry? initialMediaEntry;
   final void Function(Project project, WorkLog log)? onSaveWork;
   final void Function(Workout workout)? onSaveHealth;
-  final void Function(MediaEntry entry, LeisureLog? log)? onSaveLeisure;
+  final void Function(MediaEntry entry)? onSaveLeisure;
 
   @override
   State<_AddEntrySheet> createState() => _AddEntrySheetState();
@@ -82,9 +77,7 @@ class _AddEntrySheetState extends State<_AddEntrySheet> {
   late DateTime _healthDate;
   late final TextEditingController _healthNotesController;
 
-  late MediaType _leisureType;
-  int _leisureMinutes = 30;
-  DateTime _leisureDate = DateTime.now();
+  MediaType _leisureType = MediaType.book;
   bool _leisureTitleError = false;
   late final TextEditingController _leisureNewTitleController;
 
@@ -101,7 +94,6 @@ class _AddEntrySheetState extends State<_AddEntrySheet> {
     _healthNotesController =
         TextEditingController(text: widget.initialWorkout?.notes ?? '');
 
-    _leisureType = widget.initialMediaEntry?.type ?? MediaType.book;
     _leisureNewTitleController = TextEditingController();
   }
 
@@ -135,7 +127,7 @@ class _AddEntrySheetState extends State<_AddEntrySheet> {
       case Pillar.health:
         return widget.initialWorkout == null ? 'New workout' : 'Edit workout';
       case Pillar.leisure:
-        return widget.initialMediaEntry == null ? 'New title' : 'Log time';
+        return 'New title';
     }
   }
 
@@ -182,33 +174,19 @@ class _AddEntrySheetState extends State<_AddEntrySheet> {
         ));
         Navigator.of(context).pop();
       case Pillar.leisure:
-        final existing = widget.initialMediaEntry;
-        if (existing != null) {
-          widget.onSaveLeisure?.call(
-            existing,
-            LeisureLog(
-              id: DateTime.now().microsecondsSinceEpoch.toString(),
-              mediaId: existing.id,
-              minutes: _leisureMinutes,
-              date: _leisureDate,
-            ),
-          );
-        } else {
-          final title = _leisureNewTitleController.text.trim();
-          if (title.isEmpty) {
-            setState(() => _leisureTitleError = true);
-            return;
-          }
-          widget.onSaveLeisure?.call(
-            MediaEntry(
-              id: DateTime.now().microsecondsSinceEpoch.toString(),
-              title: title,
-              type: _leisureType,
-              status: MediaStatus.want,
-            ),
-            null,
-          );
+        final title = _leisureNewTitleController.text.trim();
+        if (title.isEmpty) {
+          setState(() => _leisureTitleError = true);
+          return;
         }
+        widget.onSaveLeisure?.call(
+          MediaEntry(
+            id: DateTime.now().microsecondsSinceEpoch.toString(),
+            title: title,
+            type: _leisureType,
+            status: MediaStatus.want,
+          ),
+        );
         Navigator.of(context).pop();
     }
   }
@@ -298,50 +276,26 @@ class _AddEntrySheetState extends State<_AddEntrySheet> {
           ),
         ];
       case Pillar.leisure:
-        final existing = widget.initialMediaEntry;
-        if (existing == null) {
-          return [
-            LabelledField(
-              label: 'New title',
-              child: AppTextField(
-                hint: 'e.g. Dune: Part Two',
-                controller: _leisureNewTitleController,
-                errorText: _leisureTitleError ? 'Enter a title' : null,
-              ),
-            ),
-            LabelledField(
-              label: 'Kind',
-              child: Wrap(
-                spacing: AppSpacing.sm,
-                children: MediaType.values.map((t) {
-                  return ChoiceChip(
-                    label: Text(t.label),
-                    selected: _leisureType == t,
-                    onSelected: (_) => setState(() => _leisureType = t),
-                  );
-                }).toList(),
-              ),
-            ),
-          ];
-        }
         return [
           LabelledField(
-            label: 'Title',
-            child: Text(existing.title,
-                style: Theme.of(context).textTheme.bodyMedium),
-          ),
-          LabelledField(
-            label: 'Duration',
-            child: DurationStepper(
-              minutes: _leisureMinutes,
-              onChanged: (v) => setState(() => _leisureMinutes = v),
+            label: 'New title',
+            child: AppTextField(
+              hint: 'e.g. Dune: Part Two',
+              controller: _leisureNewTitleController,
+              errorText: _leisureTitleError ? 'Enter a title' : null,
             ),
           ),
           LabelledField(
-            label: 'Date',
-            child: DateField(
-              value: _leisureDate,
-              onChanged: (d) => setState(() => _leisureDate = d),
+            label: 'Kind',
+            child: Wrap(
+              spacing: AppSpacing.sm,
+              children: MediaType.values.map((t) {
+                return ChoiceChip(
+                  label: Text(t.label),
+                  selected: _leisureType == t,
+                  onSelected: (_) => setState(() => _leisureType = t),
+                );
+              }).toList(),
             ),
           ),
         ];

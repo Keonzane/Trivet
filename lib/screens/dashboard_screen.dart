@@ -208,8 +208,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
               for (final e in enjoying) ...[
                 MediaCard(
                   entry: e,
-                  progress:
-                      '${_hoursThisWeek(e.id, week).toStringAsFixed(1)} h',
                   onTap: () => _openMediaDetail(e),
                 ),
                 const SizedBox(height: AppSpacing.sm),
@@ -225,13 +223,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
         ),
       ),
     );
-  }
-
-  double _hoursThisWeek(String mediaId, WeekRange week) {
-    final minutes = _leisureLogs
-        .where((l) => l.mediaId == mediaId && week.contains(l.date))
-        .fold(0, (sum, l) => sum + l.minutes);
-    return minutes / 60;
   }
 
   Future<void> _openMediaDetail(MediaEntry entry) async {
@@ -312,7 +303,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         await _workoutStore.save(_workouts);
         if (mounted) setState(() {});
       },
-      onSaveLeisure: (entry, _) async {
+      onSaveLeisure: (entry) async {
         _media = [..._media, entry];
         await _mediaStore.save(_media);
         if (mounted) setState(() {});

@@ -58,7 +58,7 @@ class _LeisureScreenState extends State<LeisureScreen> {
     await showAddEntrySheet(
       context: context,
       initialPillar: Pillar.leisure,
-      onSaveLeisure: (entry, _) async {
+      onSaveLeisure: (entry) async {
         setState(() => _entries = [..._entries, entry]);
         await _mediaStore.save(_entries);
       },
@@ -147,7 +147,6 @@ class _LeisureScreenState extends State<LeisureScreen> {
                             const SizedBox(height: AppSpacing.sm),
                         itemBuilder: (context, i) {
                           final e = filtered[i];
-                          final hours = _hoursThisWeek(e.id);
                           return DismissibleRow(
                             itemKey: ValueKey(e.id),
                             title: e.title,
@@ -156,7 +155,6 @@ class _LeisureScreenState extends State<LeisureScreen> {
                             onDelete: () => _deleteTitle(e),
                             child: MediaCard(
                               entry: e,
-                              progress: '${hours.toStringAsFixed(1)} h',
                               onTap: () => _openDetail(e),
                             ),
                           );

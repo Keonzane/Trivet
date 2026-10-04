@@ -7,14 +7,35 @@ class MediaCard extends StatelessWidget {
   const MediaCard({
     super.key,
     required this.entry,
-    this.progress,
     required this.onTap,
   });
 
   final MediaEntry entry;
 
-  final String? progress;
   final VoidCallback onTap;
+
+  String get _progress {
+    switch (entry.type) {
+      case MediaType.book:
+        if (entry.totalPages == 0) return '0%';
+        final percent =
+            (entry.currentPage / entry.totalPages * 100).clamp(0, 100);
+        return '${percent.round()}%';
+      case MediaType.film:
+      case MediaType.series:
+        return '${_hm(entry.stoppedMinutes)} / ${_hm(entry.totalMinutes)}';
+      case MediaType.game:
+        return _hm(entry.durationMinutes);
+    }
+  }
+
+  String _hm(int minutes) {
+    final h = minutes ~/ 60;
+    final m = minutes % 60;
+    if (h == 0) return '${m}m';
+    if (m == 0) return '${h}h';
+    return '${h}h ${m}m';
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -67,7 +88,7 @@ class MediaCard extends StatelessWidget {
                         ?.copyWith(color: theme.colorScheme.secondary),
                   ),
                 MediaStatus.inProgress =>
-                  Text(progress ?? '', style: theme.textTheme.labelLarge),
+                  Text(_progress, style: theme.textTheme.labelLarge),
                 MediaStatus.done =>
                   _Stars(rating: entry.rating ?? 0, color: accent),
               },

@@ -38,9 +38,14 @@ class MediaEntry {
   final int? rating;
 
   final int durationMinutes;
-  final int pages;
-  final int season;
-  final int episode;
+  final int totalPages;
+  final int currentPage;
+  final int totalMinutes;
+  final int stoppedMinutes;
+  final int totalSeasons;
+  final int currentSeason;
+  final int totalEpisodes;
+  final int currentEpisode;
 
   final String notes;
 
@@ -51,11 +56,25 @@ class MediaEntry {
     required this.status,
     this.rating,
     this.durationMinutes = 0,
-    this.pages = 0,
-    this.season = 1,
-    this.episode = 1,
+    this.totalPages = 0,
+    this.currentPage = 0,
+    this.totalMinutes = 0,
+    this.stoppedMinutes = 0,
+    this.totalSeasons = 1,
+    this.currentSeason = 1,
+    this.totalEpisodes = 1,
+    this.currentEpisode = 1,
     this.notes = '',
   });
+
+  int get trackedMinutes => type == MediaType.film || type == MediaType.series
+      ? stoppedMinutes
+      : durationMinutes;
+
+  MediaEntry withTrackedMinutes(int minutes) =>
+      type == MediaType.film || type == MediaType.series
+          ? copyWith(stoppedMinutes: minutes)
+          : copyWith(durationMinutes: minutes);
 
   MediaEntry copyWith({
     String? id,
@@ -64,9 +83,14 @@ class MediaEntry {
     MediaStatus? status,
     int? rating,
     int? durationMinutes,
-    int? pages,
-    int? season,
-    int? episode,
+    int? totalPages,
+    int? currentPage,
+    int? totalMinutes,
+    int? stoppedMinutes,
+    int? totalSeasons,
+    int? currentSeason,
+    int? totalEpisodes,
+    int? currentEpisode,
     String? notes,
   }) {
     return MediaEntry(
@@ -76,9 +100,14 @@ class MediaEntry {
       status: status ?? this.status,
       rating: rating ?? this.rating,
       durationMinutes: durationMinutes ?? this.durationMinutes,
-      pages: pages ?? this.pages,
-      season: season ?? this.season,
-      episode: episode ?? this.episode,
+      totalPages: totalPages ?? this.totalPages,
+      currentPage: currentPage ?? this.currentPage,
+      totalMinutes: totalMinutes ?? this.totalMinutes,
+      stoppedMinutes: stoppedMinutes ?? this.stoppedMinutes,
+      totalSeasons: totalSeasons ?? this.totalSeasons,
+      currentSeason: currentSeason ?? this.currentSeason,
+      totalEpisodes: totalEpisodes ?? this.totalEpisodes,
+      currentEpisode: currentEpisode ?? this.currentEpisode,
       notes: notes ?? this.notes,
     );
   }
@@ -90,9 +119,14 @@ class MediaEntry {
         'status': status.name,
         'rating': rating,
         'durationMinutes': durationMinutes,
-        'pages': pages,
-        'season': season,
-        'episode': episode,
+        'totalPages': totalPages,
+        'currentPage': currentPage,
+        'totalMinutes': totalMinutes,
+        'stoppedMinutes': stoppedMinutes,
+        'totalSeasons': totalSeasons,
+        'currentSeason': currentSeason,
+        'totalEpisodes': totalEpisodes,
+        'currentEpisode': currentEpisode,
         'notes': notes,
       };
 
@@ -103,9 +137,14 @@ class MediaEntry {
         status: MediaStatus.values.byName(map['status'] as String),
         rating: map['rating'] as int?,
         durationMinutes: map['durationMinutes'] as int? ?? 0,
-        pages: map['pages'] as int? ?? 0,
-        season: map['season'] as int? ?? 1,
-        episode: map['episode'] as int? ?? 1,
+        totalPages: map['totalPages'] as int? ?? 0,
+        currentPage: map['currentPage'] as int? ?? 0,
+        totalMinutes: map['totalMinutes'] as int? ?? 0,
+        stoppedMinutes: map['stoppedMinutes'] as int? ?? 0,
+        totalSeasons: map['totalSeasons'] as int? ?? 1,
+        currentSeason: map['currentSeason'] as int? ?? 1,
+        totalEpisodes: map['totalEpisodes'] as int? ?? 1,
+        currentEpisode: map['currentEpisode'] as int? ?? 1,
         notes: map['notes'] as String? ?? '',
       );
 }
