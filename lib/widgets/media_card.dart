@@ -8,14 +8,12 @@ class MediaCard extends StatelessWidget {
     super.key,
     required this.entry,
     this.progress,
-    this.rating,
     required this.onTap,
   });
 
   final MediaEntry entry;
 
   final String? progress;
-  final int? rating;
   final VoidCallback onTap;
 
   @override
@@ -48,21 +46,31 @@ class MediaCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(entry.title, style: theme.textTheme.bodyMedium),
-                    const SizedBox(height: AppSpacing.xs),
-                    Text(
-                      '${entry.type.label} · ${entry.status.label}',
-                      style: theme.textTheme.labelSmall
-                          ?.copyWith(color: theme.colorScheme.secondary),
-                    ),
+                    if (entry.status != MediaStatus.want) ...[
+                      const SizedBox(height: AppSpacing.xs),
+                      Text(
+                        '${entry.type.label} · ${entry.status.label}',
+                        style: theme.textTheme.labelSmall
+                            ?.copyWith(color: theme.colorScheme.secondary),
+                      ),
+                    ],
                   ],
                 ),
               ),
             ),
             Padding(
               padding: const EdgeInsets.only(right: AppSpacing.md),
-              child: rating != null
-                  ? _Stars(rating: rating!, color: accent)
-                  : Text(progress ?? '', style: theme.textTheme.labelLarge),
+              child: switch (entry.status) {
+                MediaStatus.want => Text(
+                    entry.type.label,
+                    style: theme.textTheme.labelLarge
+                        ?.copyWith(color: theme.colorScheme.secondary),
+                  ),
+                MediaStatus.inProgress =>
+                  Text(progress ?? '', style: theme.textTheme.labelLarge),
+                MediaStatus.done =>
+                  _Stars(rating: entry.rating ?? 0, color: accent),
+              },
             ),
           ],
         ),

@@ -157,7 +157,6 @@ class _LeisureScreenState extends State<LeisureScreen> {
                             child: MediaCard(
                               entry: e,
                               progress: '${hours.toStringAsFixed(1)} h',
-                              rating: e.rating,
                               onTap: () => _openDetail(e),
                             ),
                           );
