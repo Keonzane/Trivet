@@ -58,15 +58,9 @@ class _LeisureScreenState extends State<LeisureScreen> {
     await showAddEntrySheet(
       context: context,
       initialPillar: Pillar.leisure,
-      onSaveLeisure: (entry, log) async {
-        setState(() {
-          if (!_entries.any((e) => e.id == entry.id)) {
-            _entries = [..._entries, entry];
-          }
-          _logs = [..._logs, log];
-        });
+      onSaveLeisure: (entry, _) async {
+        setState(() => _entries = [..._entries, entry]);
         await _mediaStore.save(_entries);
-        await _logStore.save(_logs);
       },
     );
   }

@@ -81,13 +81,19 @@ class _DashboardScreenState extends State<DashboardScreen> {
         weekWorkouts.fold(0, (sum, w) => sum + w.durationMinutes);
     final healthHours = healthMinutes / 60;
 
+    final wantIds = _media
+        .where((e) => e.status == MediaStatus.want)
+        .map((e) => e.id)
+        .toSet();
     final leisureMinutes = _leisureLogs
-        .where((l) => week.contains(l.date))
+        .where((l) => week.contains(l.date) && !wantIds.contains(l.mediaId))
         .fold(0, (sum, l) => sum + l.minutes);
     final leisureHours = leisureMinutes / 60;
 
-    final enjoying =
-        _media.where((e) => e.status != MediaStatus.want).take(2).toList();
+    final enjoying = _media
+        .where((e) => e.status == MediaStatus.inProgress)
+        .take(2)
+        .toList();
 
     final nudge = _nudgeFor(
       workHours: workHours,
@@ -202,10 +208,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
               for (final e in enjoying) ...[
                 MediaCard(
                   entry: e,
-                  rating: e.rating,
-                  progress: e.rating == null
-                      ? '${_hoursThisWeek(e.id, week).toStringAsFixed(1)} h'
-                      : null,
+                  progress:
+                      '${_hoursThisWeek(e.id, week).toStringAsFixed(1)} h',
                   onTap: () => _openMediaDetail(e),
                 ),
                 const SizedBox(height: AppSpacing.sm),
@@ -308,13 +312,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
         await _workoutStore.save(_workouts);
         if (mounted) setState(() {});
       },
-      onSaveLeisure: (entry, log) async {
-        if (!_media.any((e) => e.id == entry.id)) {
-          _media = [..._media, entry];
-          await _mediaStore.save(_media);
-        }
-        _leisureLogs = [..._leisureLogs, log];
-        await _leisureLogStore.save(_leisureLogs);
+      onSaveLeisure: (entry, _) async {
+        _media = [..._media, entry];
+        await _mediaStore.save(_media);
         if (mounted) setState(() {});
       },
     );

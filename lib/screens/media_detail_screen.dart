@@ -78,6 +78,7 @@ class _MediaDetailScreenState extends State<MediaDetailScreen> {
       initialPillar: Pillar.leisure,
       initialMediaEntry: _entry,
       onSaveLeisure: (entry, log) async {
+        if (log == null) return;
         _allLogs = [..._allLogs, log];
         await _logStore.save(_allLogs);
         if (mounted) setState(() {});

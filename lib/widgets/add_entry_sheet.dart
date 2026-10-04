@@ -19,7 +19,7 @@ Future<void> showAddEntrySheet({
   MediaEntry? initialMediaEntry,
   void Function(Project project, WorkLog log)? onSaveWork,
   void Function(Workout workout)? onSaveHealth,
-  void Function(MediaEntry entry, LeisureLog log)? onSaveLeisure,
+  void Function(MediaEntry entry, LeisureLog? log)? onSaveLeisure,
 }) {
   assert(
     switch (initialPillar) {
@@ -63,7 +63,7 @@ class _AddEntrySheet extends StatefulWidget {
   final MediaEntry? initialMediaEntry;
   final void Function(Project project, WorkLog log)? onSaveWork;
   final void Function(Workout workout)? onSaveHealth;
-  final void Function(MediaEntry entry, LeisureLog log)? onSaveLeisure;
+  final void Function(MediaEntry entry, LeisureLog? log)? onSaveLeisure;
 
   @override
   State<_AddEntrySheet> createState() => _AddEntrySheetState();
@@ -87,9 +87,6 @@ class _AddEntrySheetState extends State<_AddEntrySheet> {
   DateTime _leisureDate = DateTime.now();
   bool _leisureTitleError = false;
   late final TextEditingController _leisureNewTitleController;
-  int _leisurePages = 0;
-  int _leisureSeason = 1;
-  int _leisureEpisode = 1;
 
   @override
   void initState() {
@@ -145,7 +142,7 @@ class _AddEntrySheetState extends State<_AddEntrySheet> {
   void _save() {
     switch (_pillar) {
       case null:
-        return;
+        return; // Save is disabled in build() until a pillar is chosen.
       case Pillar.work:
         Project project;
         if (widget.initialProject != null) {
@@ -185,34 +182,33 @@ class _AddEntrySheetState extends State<_AddEntrySheet> {
         ));
         Navigator.of(context).pop();
       case Pillar.leisure:
-        MediaEntry entry;
-        if (widget.initialMediaEntry != null) {
-          entry = widget.initialMediaEntry!;
+        final existing = widget.initialMediaEntry;
+        if (existing != null) {
+          widget.onSaveLeisure?.call(
+            existing,
+            LeisureLog(
+              id: DateTime.now().microsecondsSinceEpoch.toString(),
+              mediaId: existing.id,
+              minutes: _leisureMinutes,
+              date: _leisureDate,
+            ),
+          );
         } else {
           final title = _leisureNewTitleController.text.trim();
           if (title.isEmpty) {
             setState(() => _leisureTitleError = true);
             return;
           }
-          entry = MediaEntry(
-            id: DateTime.now().microsecondsSinceEpoch.toString(),
-            title: title,
-            type: _leisureType,
-            status: MediaStatus.want,
-            pages: _leisureType == MediaType.book ? _leisurePages : 0,
-            season: _leisureType == MediaType.series ? _leisureSeason : 1,
-            episode: _leisureType == MediaType.series ? _leisureEpisode : 1,
+          widget.onSaveLeisure?.call(
+            MediaEntry(
+              id: DateTime.now().microsecondsSinceEpoch.toString(),
+              title: title,
+              type: _leisureType,
+              status: MediaStatus.want,
+            ),
+            null,
           );
         }
-        widget.onSaveLeisure?.call(
-          entry,
-          LeisureLog(
-            id: DateTime.now().microsecondsSinceEpoch.toString(),
-            mediaId: entry.id,
-            minutes: _leisureMinutes,
-            date: _leisureDate,
-          ),
-        );
         Navigator.of(context).pop();
     }
   }
@@ -306,16 +302,9 @@ class _AddEntrySheetState extends State<_AddEntrySheet> {
           ),
         ];
       case Pillar.leisure:
-        return [
-          if (widget.initialMediaEntry != null)
-            LabelledField(
-              label: 'Title',
-              child: Text(
-                widget.initialMediaEntry!.title,
-                style: Theme.of(context).textTheme.bodyMedium,
-              ),
-            )
-          else ...[
+        final existing = widget.initialMediaEntry;
+        if (existing == null) {
+          return [
             LabelledField(
               label: 'New title',
               child: AppTextField(
@@ -337,7 +326,14 @@ class _AddEntrySheetState extends State<_AddEntrySheet> {
                 }).toList(),
               ),
             ),
-          ],
+          ];
+        }
+        return [
+          LabelledField(
+            label: 'Title',
+            child: Text(existing.title,
+                style: Theme.of(context).textTheme.bodyMedium),
+          ),
           LabelledField(
             label: 'Duration',
             child: DurationStepper(
@@ -347,40 +343,6 @@ class _AddEntrySheetState extends State<_AddEntrySheet> {
               onChanged: (v) => setState(() => _leisureMinutes = v.toInt()),
             ),
           ),
-          if (widget.initialMediaEntry == null &&
-              _leisureType == MediaType.book)
-            LabelledField(
-              label: 'Pages',
-              child: DurationStepper(
-                value: _leisurePages,
-                step: 1,
-                unit: 'pages',
-                onChanged: (v) => setState(() => _leisurePages = v.toInt()),
-              ),
-            ),
-          if (widget.initialMediaEntry == null &&
-              _leisureType == MediaType.series) ...[
-            LabelledField(
-              label: 'Season',
-              child: DurationStepper(
-                value: _leisureSeason,
-                step: 1,
-                unit: 'season',
-                min: 1,
-                onChanged: (v) => setState(() => _leisureSeason = v.toInt()),
-              ),
-            ),
-            LabelledField(
-              label: 'Episode',
-              child: DurationStepper(
-                value: _leisureEpisode,
-                step: 1,
-                unit: 'episode',
-                min: 1,
-                onChanged: (v) => setState(() => _leisureEpisode = v.toInt()),
-              ),
-            ),
-          ],
           LabelledField(
             label: 'Date',
             child: DateField(
