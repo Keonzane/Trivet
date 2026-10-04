@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../theme.dart';
-
 class DurationStepper extends StatelessWidget {
   const DurationStepper({
     super.key,
