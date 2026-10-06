@@ -47,7 +47,7 @@ class _AddEntrySheetState extends State<_AddEntrySheet> {
   Pillar? _pillar;
 
   int _workMinutes = 60;
-  DateTime _workDate = DateTime.now();
+  DateTime? _workDueDate;
   bool _workTitleError = false;
   late final TextEditingController _workNewTitleController;
 
@@ -126,21 +126,24 @@ class _AddEntrySheetState extends State<_AddEntrySheet> {
           project = Project(
             id: id,
             title: title,
-            subtitle: 'Personal',
             status: ProjectStatus.active,
+            dueDate: _workDueDate,
           );
           final projectStore = ProjectStore();
           await projectStore.save([...await projectStore.load(), project]);
         }
-        final logStore = WorkLogStore();
-        await logStore.save([
-          ...await logStore.load(),
-          WorkLog(
+        if (_workMinutes > 0) {
+          final logStore = WorkLogStore();
+          await logStore.save([
+            ...await logStore.load(),
+            WorkLog(
               id: id,
               projectId: project.id,
               hours: _workMinutes / 60,
-              date: _workDate),
-        ]);
+              date: DateTime.now(),
+            ),
+          ]);
+        }
       case Pillar.health:
         final workout = Workout(
           id: widget.initialWorkout?.id ?? id,
@@ -198,7 +201,7 @@ class _AddEntrySheetState extends State<_AddEntrySheet> {
                 style: Theme.of(context).textTheme.bodyMedium,
               ),
             )
-          else
+          else ...[
             LabelledField(
               label: 'New project title',
               child: AppTextField(
@@ -207,18 +210,20 @@ class _AddEntrySheetState extends State<_AddEntrySheet> {
                 errorText: _workTitleError ? 'Enter a title' : null,
               ),
             ),
+            LabelledField(
+              label: 'Due date',
+              child: DateField(
+                value: _workDueDate,
+                onChanged: (d) => setState(() => _workDueDate = d),
+                onClear: () => setState(() => _workDueDate = null),
+              ),
+            ),
+          ],
           LabelledField(
             label: 'Duration',
             child: DurationStepper(
               minutes: _workMinutes,
               onChanged: (v) => setState(() => _workMinutes = v),
-            ),
-          ),
-          LabelledField(
-            label: 'Date',
-            child: DateField(
-              value: _workDate,
-              onChanged: (d) => setState(() => _workDate = d),
             ),
           ),
         ];

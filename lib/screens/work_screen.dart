@@ -53,20 +53,9 @@ class _WorkScreenState extends State<WorkScreen> {
         .fold(0.0, (sum, l) => sum + l.hours);
   }
 
-  String _rowSubtitle(Project p) {
-    final dates = _logs.where((l) => l.projectId == p.id).map((l) => l.date);
-    if (dates.isEmpty) return p.subtitle;
-    final last = dates.reduce((a, b) => a.isAfter(b) ? a : b);
-    final today = DateTime.now();
-    final daysAgo = DateTime(today.year, today.month, today.day)
-        .difference(DateTime(last.year, last.month, last.day))
-        .inDays;
-    final when = daysAgo == 0
-        ? 'today'
-        : (daysAgo > 0 && daysAgo < 7)
-            ? weekdayNames[last.weekday - 1]
-            : '${last.day} ${monthNames[last.month - 1]}';
-    return '${p.subtitle} · last logged $when';
+  String _dueText(Project p) {
+    final due = p.dueDate;
+    return due == null ? 'Due: None' : 'Due: ${formatShortDate(due)}';
   }
 
   Future<void> _addProject() async {
@@ -138,7 +127,7 @@ class _WorkScreenState extends State<WorkScreen> {
                               child: PillarCard(
                                 pillar: Pillar.work,
                                 title: p.title,
-                                subtitle: _rowSubtitle(p),
+                                subtitle: _dueText(p),
                                 trailing: Text(
                                   '${_hoursThisWeek(p.id).toStringAsFixed(1)} h',
                                   style: Theme.of(context).textTheme.labelLarge,

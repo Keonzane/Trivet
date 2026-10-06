@@ -109,8 +109,6 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Caption(_project.subtitle),
-                    const SizedBox(height: AppSpacing.xs),
                     Text(
                       '${_totalHours.toStringAsFixed(1)} h logged in total',
                       style: theme.textTheme.bodyMedium,
@@ -131,6 +129,14 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
                       ],
                       selected: {_project.status},
                       onSelectionChanged: (s) => _setStatus(s.first),
+                    ),
+                    const SizedBox(height: AppSpacing.lg),
+                    const Caption('DUE DATE'),
+                    const SizedBox(height: AppSpacing.sm),
+                    DateField(
+                      value: _project.dueDate,
+                      onChanged: (d) => _update((p) => p.withDueDate(d)),
+                      onClear: () => _update((p) => p.withDueDate(null)),
                     ),
                     const SizedBox(height: AppSpacing.lg),
                     const Caption('NOTES'),

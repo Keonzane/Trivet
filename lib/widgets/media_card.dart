@@ -19,8 +19,7 @@ class MediaCard extends StatelessWidget {
     switch (entry.type) {
       case MediaType.book:
         if (entry.totalPages == 0) return '0%';
-        final percent =
-            (entry.currentPage / entry.totalPages * 100).clamp(0, 100);
+        final percent = (entry.currentPage / entry.totalPages * 100).clamp(0, 100);
         return '${percent.round()}%';
       case MediaType.film:
       case MediaType.series:
@@ -64,11 +63,9 @@ class MediaCard extends StatelessWidget {
       trailing: switch (entry.status) {
         MediaStatus.want => Text(
             entry.type.label,
-            style: theme.textTheme.labelLarge
-                ?.copyWith(color: theme.colorScheme.secondary),
+            style: theme.textTheme.labelLarge?.copyWith(color: theme.colorScheme.secondary),
           ),
-        MediaStatus.inProgress =>
-          Text(_progress, style: theme.textTheme.labelLarge),
+        MediaStatus.inProgress => Text(_progress, style: theme.textTheme.labelLarge),
         MediaStatus.done => _Stars(
             rating: entry.rating ?? 0,
             color: context.pillars.of(Pillar.leisure),
@@ -90,8 +87,7 @@ class _Stars extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         for (var i = 1; i <= 5; i++)
-          Icon(i <= rating ? Icons.star : Icons.star_border,
-              size: 16, color: color),
+          Icon(i <= rating ? Icons.star : Icons.star_border, size: 16, color: color),
       ],
     );
   }

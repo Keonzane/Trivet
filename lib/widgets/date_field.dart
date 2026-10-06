@@ -26,10 +26,16 @@ String formatShortDate(DateTime d) =>
     '${d.day} ${monthNames[d.month - 1]} ${d.year}';
 
 class DateField extends StatefulWidget {
-  const DateField({super.key, required this.value, required this.onChanged});
+  const DateField({
+    super.key,
+    required this.value,
+    required this.onChanged,
+    this.onClear,
+  });
 
-  final DateTime value;
+  final DateTime? value;
   final ValueChanged<DateTime> onChanged;
+  final VoidCallback? onClear;
 
   @override
   State<DateField> createState() => _DateFieldState();
@@ -37,14 +43,15 @@ class DateField extends StatefulWidget {
 
 class _DateFieldState extends State<DateField> {
   late final TextEditingController _controller =
-      TextEditingController(text: formatShortDate(widget.value));
+      TextEditingController(text: _text);
+
+  String get _text =>
+      widget.value == null ? 'None' : formatShortDate(widget.value!);
 
   @override
   void didUpdateWidget(DateField oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.value != widget.value) {
-      _controller.text = formatShortDate(widget.value);
-    }
+    if (oldWidget.value != widget.value) _controller.text = _text;
   }
 
   @override
@@ -56,7 +63,7 @@ class _DateFieldState extends State<DateField> {
   Future<void> _pick() async {
     final picked = await showDatePicker(
       context: context,
-      initialDate: widget.value,
+      initialDate: widget.value ?? DateTime.now(),
       firstDate: DateTime(2020),
       lastDate: DateTime(2100),
     );
@@ -69,7 +76,13 @@ class _DateFieldState extends State<DateField> {
       hint: 'Date',
       controller: _controller,
       onTap: _pick,
-      suffixIcon: const Icon(Icons.calendar_today_outlined, size: 18),
+      suffixIcon: widget.onClear != null && widget.value != null
+          ? IconButton(
+              icon: const Icon(Icons.close, size: 18),
+              tooltip: 'Clear',
+              onPressed: widget.onClear,
+            )
+          : const Icon(Icons.calendar_today_outlined, size: 18),
     );
   }
 }
