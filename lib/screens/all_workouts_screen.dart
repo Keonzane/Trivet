@@ -101,10 +101,7 @@ class _AllWorkoutsScreenState extends State<AllWorkoutsScreen> {
                           onDelete: () => _delete(w),
                           child: WorkoutRow(
                             workout: w,
-                            subtitle:
-                                'Gym · ${TimeOfDay.fromDateTime(w.date).format(context)}',
-                            onToggleDone: () =>
-                                _replace(w.copyWith(done: !w.done)),
+                            onToggleDone: () => _replace(w.toggledDone()),
                             onTap: () => _edit(w),
                           ),
                         ),

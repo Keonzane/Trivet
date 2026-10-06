@@ -244,13 +244,20 @@ class _MediaDetailScreenState extends State<MediaDetailScreen> {
   List<Widget> _progressFields() {
     final stopped = _field(
       'WHERE YOU STOPPED',
-      DurationStepper(minutes: _entry.stoppedMinutes, onChanged: _setTracked),
+      DurationStepper(
+        minutes: _entry.stoppedMinutes,
+        max: _entry.totalMinutes,
+        onChanged: _setTracked,
+      ),
     );
     final total = _field(
       'TOTAL DURATION',
       DurationStepper(
         minutes: _entry.totalMinutes,
-        onChanged: (v) => _update((e) => e.copyWith(totalMinutes: v)),
+        onChanged: (v) {
+          _update((e) => e.copyWith(totalMinutes: v));
+          if (_entry.stoppedMinutes > v) _setTracked(v);
+        },
       ),
     );
     final timeSpent = _field(
@@ -265,12 +272,16 @@ class _MediaDetailScreenState extends State<MediaDetailScreen> {
             'CURRENT PAGE',
             NumberStepper(
               value: _entry.currentPage,
+              max: _entry.totalPages,
               onChanged: (v) => _update((e) => e.copyWith(currentPage: v)),
             ),
             'TOTAL PAGES',
             NumberStepper(
               value: _entry.totalPages,
-              onChanged: (v) => _update((e) => e.copyWith(totalPages: v)),
+              onChanged: (v) => _update((e) => e.copyWith(
+                    totalPages: v,
+                    currentPage: e.currentPage > v ? v : e.currentPage,
+                  )),
             ),
           ),
           timeSpent,
@@ -284,13 +295,17 @@ class _MediaDetailScreenState extends State<MediaDetailScreen> {
             NumberStepper(
               value: _entry.currentSeason,
               min: 1,
+              max: _entry.totalSeasons,
               onChanged: (v) => _update((e) => e.copyWith(currentSeason: v)),
             ),
             'TOTAL SEASONS',
             NumberStepper(
               value: _entry.totalSeasons,
               min: 1,
-              onChanged: (v) => _update((e) => e.copyWith(totalSeasons: v)),
+              onChanged: (v) => _update((e) => e.copyWith(
+                    totalSeasons: v,
+                    currentSeason: e.currentSeason > v ? v : e.currentSeason,
+                  )),
             ),
           ),
           _pair(
@@ -298,13 +313,17 @@ class _MediaDetailScreenState extends State<MediaDetailScreen> {
             NumberStepper(
               value: _entry.currentEpisode,
               min: 1,
+              max: _entry.totalEpisodes,
               onChanged: (v) => _update((e) => e.copyWith(currentEpisode: v)),
             ),
             'TOTAL EPISODES',
             NumberStepper(
               value: _entry.totalEpisodes,
               min: 1,
-              onChanged: (v) => _update((e) => e.copyWith(totalEpisodes: v)),
+              onChanged: (v) => _update((e) => e.copyWith(
+                    totalEpisodes: v,
+                    currentEpisode: e.currentEpisode > v ? v : e.currentEpisode,
+                  )),
             ),
           ),
           stopped,

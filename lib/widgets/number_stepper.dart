@@ -8,12 +8,14 @@ class NumberStepper extends StatefulWidget {
     required this.onChanged,
     this.unit,
     this.min = 0,
+    this.max,
   });
 
   final int value;
   final ValueChanged<int> onChanged;
   final String? unit;
   final int min;
+  final int? max;
 
   @override
   State<NumberStepper> createState() => _NumberStepperState();
@@ -37,9 +39,15 @@ class _NumberStepperState extends State<NumberStepper> {
     super.dispose();
   }
 
+  int _clamp(int v) {
+    final max = widget.max;
+    if (max != null && v > max) return max;
+    return v < widget.min ? widget.min : v;
+  }
+
   void _typed(String text) {
     final v = int.tryParse(text);
-    if (v != null) widget.onChanged(v < widget.min ? widget.min : v);
+    if (v != null) widget.onChanged(_clamp(v));
   }
 
   @override
@@ -84,7 +92,9 @@ class _NumberStepperState extends State<NumberStepper> {
           IconButton(
             icon: const Icon(Icons.add),
             visualDensity: VisualDensity.compact,
-            onPressed: () => widget.onChanged(widget.value + 1),
+            onPressed: widget.max == null || widget.value < widget.max!
+                ? () => widget.onChanged(widget.value + 1)
+                : null,
           ),
         ],
       ),

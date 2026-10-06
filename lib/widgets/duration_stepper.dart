@@ -3,11 +3,21 @@ import '../theme.dart';
 import 'number_stepper.dart';
 
 class DurationStepper extends StatelessWidget {
-  const DurationStepper(
-      {super.key, required this.minutes, required this.onChanged});
+  const DurationStepper({
+    super.key,
+    required this.minutes,
+    required this.onChanged,
+    this.max,
+  });
 
   final int minutes;
   final ValueChanged<int> onChanged;
+  final int? max;
+
+  void _set(int total) {
+    final limit = max;
+    onChanged(limit != null && total > limit ? limit : total);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -19,7 +29,8 @@ class DurationStepper extends StatelessWidget {
           child: NumberStepper(
             value: hours,
             unit: 'h',
-            onChanged: (h) => onChanged(h * 60 + mins),
+            max: max == null ? null : max! ~/ 60,
+            onChanged: (h) => _set(h * 60 + mins),
           ),
         ),
         const SizedBox(width: AppSpacing.sm),
@@ -28,7 +39,8 @@ class DurationStepper extends StatelessWidget {
             value: mins,
             unit: 'min',
             min: hours > 0 ? -1 : 0,
-            onChanged: (m) => onChanged(hours * 60 + m),
+            max: max != null && hours >= max! ~/ 60 ? max! % 60 : null,
+            onChanged: (m) => _set(hours * 60 + m),
           ),
         ),
       ],

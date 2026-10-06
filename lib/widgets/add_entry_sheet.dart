@@ -149,6 +149,7 @@ class _AddEntrySheetState extends State<_AddEntrySheet> {
           date: _healthDate,
           notes: _healthNotesController.text.trim(),
           done: widget.initialWorkout?.done ?? false,
+          completedAt: widget.initialWorkout?.completedAt,
         );
         final store = WorkoutStore();
         await store.save([

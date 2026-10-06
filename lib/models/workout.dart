@@ -7,6 +7,7 @@ class Workout {
   final DateTime date;
   final String notes;
   final bool done;
+  final DateTime? completedAt;
 
   const Workout({
     required this.id,
@@ -15,25 +16,18 @@ class Workout {
     required this.date,
     this.notes = '',
     this.done = false,
+    this.completedAt,
   });
 
-  Workout copyWith({
-    String? id,
-    WorkoutType? type,
-    int? durationMinutes,
-    DateTime? date,
-    String? notes,
-    bool? done,
-  }) {
-    return Workout(
-      id: id ?? this.id,
-      type: type ?? this.type,
-      durationMinutes: durationMinutes ?? this.durationMinutes,
-      date: date ?? this.date,
-      notes: notes ?? this.notes,
-      done: done ?? this.done,
-    );
-  }
+  Workout toggledDone() => Workout(
+        id: id,
+        type: type,
+        durationMinutes: durationMinutes,
+        date: date,
+        notes: notes,
+        done: !done,
+        completedAt: done ? null : DateTime.now(),
+      );
 
   String get label {
     switch (type) {
@@ -55,6 +49,7 @@ class Workout {
         'date': date.toIso8601String(),
         'notes': notes,
         'done': done,
+        'completedAt': completedAt?.toIso8601String(),
       };
 
   factory Workout.fromMap(Map<String, dynamic> map) => Workout(
@@ -64,5 +59,8 @@ class Workout {
         date: DateTime.parse(map['date'] as String),
         notes: map['notes'] as String? ?? '',
         done: map['done'] as bool? ?? true,
+        completedAt: map['completedAt'] == null
+            ? null
+            : DateTime.parse(map['completedAt'] as String),
       );
 }

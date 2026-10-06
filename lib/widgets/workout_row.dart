@@ -3,20 +3,34 @@ import 'package:flutter/material.dart';
 import '../models/workout.dart';
 import '../theme.dart';
 import 'caption.dart';
+import 'date_field.dart';
 
 class WorkoutRow extends StatelessWidget {
   const WorkoutRow({
     super.key,
     required this.workout,
-    required this.subtitle,
+    this.dayLabel,
     required this.onToggleDone,
     required this.onTap,
   });
 
   final Workout workout;
-  final String subtitle;
+  final String? dayLabel;
   final VoidCallback onToggleDone;
   final VoidCallback onTap;
+
+  String _subtitle(BuildContext context) {
+    final completedAt = workout.completedAt;
+    if (workout.done && completedAt != null) {
+      final time = TimeOfDay.fromDateTime(completedAt).format(context);
+      final day = isSameDay(completedAt, DateTime.now())
+          ? ''
+          : '${weekdayNames[completedAt.weekday - 1]} ';
+      return 'Gym · Done $day$time';
+    }
+    if (workout.done) return 'Gym · Done';
+    return dayLabel == null ? 'Gym' : 'Gym · $dayLabel';
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -52,7 +66,7 @@ class WorkoutRow extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: AppSpacing.xs),
-                      Caption(subtitle),
+                      Caption(_subtitle(context)),
                     ],
                   ),
                 ),

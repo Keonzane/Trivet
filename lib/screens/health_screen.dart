@@ -55,7 +55,7 @@ class _HealthScreenState extends State<HealthScreen> {
     setState(() {
       _workouts = [
         for (final x in _workouts)
-          if (x.id == w.id) x.copyWith(done: !x.done) else x,
+          if (x.id == w.id) x.toggledDone() else x,
       ];
     });
     await _store.save(_workouts);
@@ -121,7 +121,7 @@ class _HealthScreenState extends State<HealthScreen> {
       dailyMinutes[w.date.weekday - 1] += w.durationMinutes;
     }
 
-    Widget rowFor(Workout w, String subtitle) {
+    Widget rowFor(Workout w, {String? dayLabel}) {
       return DismissibleRow(
         itemKey: ValueKey(w.id),
         title: w.label,
@@ -129,7 +129,7 @@ class _HealthScreenState extends State<HealthScreen> {
         onDelete: () => _deleteWorkout(w),
         child: WorkoutRow(
           workout: w,
-          subtitle: subtitle,
+          dayLabel: dayLabel,
           onToggleDone: () => _toggleDone(w),
           onTap: () => _logWorkout(w),
         ),
@@ -173,8 +173,7 @@ class _HealthScreenState extends State<HealthScreen> {
               const Caption('TODAY'),
               const SizedBox(height: AppSpacing.sm),
               for (final w in todays) ...[
-                rowFor(w,
-                    'Gym · ${TimeOfDay.fromDateTime(w.date).format(context)}'),
+                rowFor(w),
                 const SizedBox(height: AppSpacing.sm),
               ],
               const SizedBox(height: AppSpacing.sm),
@@ -199,7 +198,7 @@ class _HealthScreenState extends State<HealthScreen> {
               const Caption('UPCOMING'),
               const SizedBox(height: AppSpacing.sm),
               for (final w in upcoming) ...[
-                rowFor(w, 'Gym · ${formatShortDate(w.date)}'),
+                rowFor(w, dayLabel: formatShortDate(w.date)),
                 const SizedBox(height: AppSpacing.sm),
               ],
               const SizedBox(height: AppSpacing.sm),
@@ -208,8 +207,7 @@ class _HealthScreenState extends State<HealthScreen> {
               const Caption('EARLIER THIS WEEK'),
               const SizedBox(height: AppSpacing.sm),
               for (final w in earlier) ...[
-                rowFor(w,
-                    'Gym · ${weekdayNames[w.date.weekday - 1]} ${TimeOfDay.fromDateTime(w.date).format(context)}'),
+                rowFor(w, dayLabel: weekdayNames[w.date.weekday - 1]),
                 const SizedBox(height: AppSpacing.sm),
               ],
             ],
