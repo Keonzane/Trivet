@@ -4,6 +4,7 @@ import '../models/project.dart';
 import '../models/work_log.dart';
 import '../services/storage_service.dart';
 import '../theme.dart';
+import '../widgets/caption.dart';
 import '../widgets/screen_header.dart';
 import '../widgets/add_entry_sheet.dart';
 import '../widgets/date_field.dart';
@@ -86,12 +87,6 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
     );
   }
 
-  Widget _caption(ThemeData theme, String text) => Text(
-        text,
-        style: theme.textTheme.labelSmall
-            ?.copyWith(color: theme.colorScheme.secondary),
-      );
-
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -110,7 +105,7 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _caption(theme, _project.subtitle),
+                    Caption(_project.subtitle),
                     const SizedBox(height: AppSpacing.xs),
                     Text(
                       '${_totalHours.toStringAsFixed(1)} h logged in total',
@@ -118,14 +113,10 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
                     ),
                     if (lastLogged != null) ...[
                       const SizedBox(height: AppSpacing.xs),
-                      Text(
-                        'Last logged ${formatShortDate(lastLogged)}',
-                        style: theme.textTheme.labelSmall
-                            ?.copyWith(color: theme.colorScheme.secondary),
-                      ),
+                      Caption('Last logged ${formatShortDate(lastLogged)}'),
                     ],
                     const SizedBox(height: AppSpacing.lg),
-                    _caption(theme, 'STATUS'),
+                    const Caption('STATUS'),
                     const SizedBox(height: AppSpacing.sm),
                     SegmentedButton<ProjectStatus>(
                       showSelectedIcon: false,
@@ -142,7 +133,7 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
                       onSelectionChanged: (s) => _setStatus(s.first),
                     ),
                     const SizedBox(height: AppSpacing.lg),
-                    _caption(theme, 'NOTES'),
+                    const Caption('NOTES'),
                     const SizedBox(height: AppSpacing.sm),
                     TextField(
                       controller: _notesController,

@@ -1,20 +1,17 @@
 import 'package:flutter/material.dart';
 
 import '../theme.dart';
+import 'date_field.dart';
 
 class WeeklyBarChart extends StatelessWidget {
   const WeeklyBarChart({
     super.key,
     required this.values,
     required this.pillar,
-    this.height = 132,
   });
 
   final List<double> values;
   final Pillar pillar;
-  final double height;
-
-  static const _dayLabels = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
 
   @override
   Widget build(BuildContext context) {
@@ -24,7 +21,7 @@ class WeeklyBarChart extends StatelessWidget {
     final maxValue = values.fold<double>(0, (m, v) => v > m ? v : m);
 
     return SizedBox(
-      height: height,
+      height: 132,
       child: Column(
         children: [
           Expanded(
@@ -56,10 +53,10 @@ class WeeklyBarChart extends StatelessWidget {
           const SizedBox(height: AppSpacing.xs),
           Row(
             children: [
-              for (final label in _dayLabels)
+              for (final day in weekdayNames)
                 Expanded(
                   child: Text(
-                    label,
+                    day[0],
                     textAlign: TextAlign.center,
                     style: theme.textTheme.labelSmall
                         ?.copyWith(color: theme.colorScheme.secondary),

@@ -7,15 +7,15 @@ class PillarCard extends StatelessWidget {
     super.key,
     required this.pillar,
     required this.title,
-    required this.subtitle,
-    required this.meta,
+    this.subtitle,
+    required this.trailing,
     required this.onTap,
   });
 
   final Pillar pillar;
   final String title;
-  final String subtitle;
-  final String meta;
+  final String? subtitle;
+  final Widget trailing;
   final VoidCallback onTap;
 
   @override
@@ -49,19 +49,21 @@ class PillarCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(title, style: theme.textTheme.bodyMedium),
-                    const SizedBox(height: AppSpacing.xs),
-                    Text(
-                      subtitle,
-                      style: theme.textTheme.labelSmall
-                          ?.copyWith(color: theme.colorScheme.secondary),
-                    ),
+                    if (subtitle != null) ...[
+                      const SizedBox(height: AppSpacing.xs),
+                      Text(
+                        subtitle!,
+                        style: theme.textTheme.labelSmall
+                            ?.copyWith(color: theme.colorScheme.secondary),
+                      ),
+                    ],
                   ],
                 ),
               ),
             ),
             Padding(
               padding: const EdgeInsets.only(right: AppSpacing.md),
-              child: Text(meta, style: theme.textTheme.labelLarge),
+              child: trailing,
             ),
           ],
         ),

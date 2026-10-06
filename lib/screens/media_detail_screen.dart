@@ -4,6 +4,8 @@ import '../models/leisure_log.dart';
 import '../models/media_entry.dart';
 import '../services/storage_service.dart';
 import '../theme.dart';
+import '../widgets/caption.dart';
+import '../widgets/date_field.dart';
 import '../widgets/duration_stepper.dart';
 import '../widgets/number_stepper.dart';
 import '../widgets/screen_header.dart';
@@ -59,10 +61,8 @@ class _MediaDetailScreenState extends State<MediaDetailScreen> {
     if (delta == 0) return;
 
     final now = DateTime.now();
-    bool isToday(DateTime d) =>
-        d.year == now.year && d.month == now.month && d.day == now.day;
-    final i =
-        _allLogs.indexWhere((l) => l.mediaId == _entry.id && isToday(l.date));
+    final i = _allLogs
+        .indexWhere((l) => l.mediaId == _entry.id && isSameDay(l.date, now));
     if (i == -1) {
       _allLogs = [
         ..._allLogs,
@@ -112,38 +112,30 @@ class _MediaDetailScreenState extends State<MediaDetailScreen> {
     _update((e) => e.copyWith(notes: _notesController.text.trim()));
   }
 
-  Widget _caption(ThemeData theme, String text) => Text(
-        text,
-        style: theme.textTheme.labelSmall
-            ?.copyWith(color: theme.colorScheme.secondary),
-      );
-
-  Widget _field(ThemeData theme, String label, Widget child) => Padding(
+  Widget _field(String label, Widget child) => Padding(
         padding: const EdgeInsets.only(bottom: AppSpacing.md),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _caption(theme, label),
+            Caption(label),
             const SizedBox(height: AppSpacing.sm),
             child,
           ],
         ),
       );
 
-  Widget _pair(ThemeData theme, String leftLabel, Widget left,
-          String rightLabel, Widget right) =>
+  Widget _pair(
+          String leftLabel, Widget left, String rightLabel, Widget right) =>
       Row(
         children: [
-          Expanded(child: _field(theme, leftLabel, left)),
+          Expanded(child: _field(leftLabel, left)),
           const SizedBox(width: AppSpacing.sm),
-          Expanded(child: _field(theme, rightLabel, right)),
+          Expanded(child: _field(rightLabel, right)),
         ],
       );
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
     return Scaffold(
       appBar: AppBar(
         title: Text(_entry.title),
@@ -157,9 +149,9 @@ class _MediaDetailScreenState extends State<MediaDetailScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _caption(theme, _entry.type.label),
+                    Caption(_entry.type.label),
                     const SizedBox(height: AppSpacing.lg),
-                    _caption(theme, 'STATUS'),
+                    const Caption('STATUS'),
                     const SizedBox(height: AppSpacing.sm),
                     SegmentedButton<MediaStatus>(
                       showSelectedIcon: false,
@@ -177,7 +169,7 @@ class _MediaDetailScreenState extends State<MediaDetailScreen> {
                       onSelectionChanged: (s) => _setStatus(s.first),
                     ),
                     const SizedBox(height: AppSpacing.lg),
-                    ..._fieldsForStatus(theme),
+                    ..._fieldsForStatus(),
                   ],
                 ),
               ),
@@ -185,12 +177,11 @@ class _MediaDetailScreenState extends State<MediaDetailScreen> {
     );
   }
 
-  List<Widget> _fieldsForStatus(ThemeData theme) {
+  List<Widget> _fieldsForStatus() {
     switch (_entry.status) {
       case MediaStatus.want:
         return [
           _field(
-            theme,
             'NOTES',
             TextField(
               controller: _notesController,
@@ -204,12 +195,11 @@ class _MediaDetailScreenState extends State<MediaDetailScreen> {
           ),
         ];
       case MediaStatus.inProgress:
-        return _progressFields(theme);
+        return _progressFields();
       case MediaStatus.done:
         final accent = context.pillars.of(Pillar.leisure);
         return [
           _field(
-            theme,
             'RATING',
             Row(
               children: [
@@ -228,7 +218,6 @@ class _MediaDetailScreenState extends State<MediaDetailScreen> {
             ),
           ),
           _field(
-            theme,
             'REVIEW',
             TextField(
               controller: _notesController,
@@ -243,14 +232,12 @@ class _MediaDetailScreenState extends State<MediaDetailScreen> {
     }
   }
 
-  List<Widget> _progressFields(ThemeData theme) {
+  List<Widget> _progressFields() {
     final stopped = _field(
-      theme,
       'WHERE YOU STOPPED',
       DurationStepper(minutes: _entry.stoppedMinutes, onChanged: _setTracked),
     );
     final total = _field(
-      theme,
       'TOTAL DURATION',
       DurationStepper(
         minutes: _entry.totalMinutes,
@@ -258,7 +245,6 @@ class _MediaDetailScreenState extends State<MediaDetailScreen> {
       ),
     );
     final timeSpent = _field(
-      theme,
       'DURATION',
       DurationStepper(minutes: _entry.durationMinutes, onChanged: _setTracked),
     );
@@ -267,7 +253,6 @@ class _MediaDetailScreenState extends State<MediaDetailScreen> {
       case MediaType.book:
         return [
           _pair(
-            theme,
             'CURRENT PAGE',
             NumberStepper(
               value: _entry.currentPage,
@@ -286,7 +271,6 @@ class _MediaDetailScreenState extends State<MediaDetailScreen> {
       case MediaType.series:
         return [
           _pair(
-            theme,
             'CURRENT SEASON',
             NumberStepper(
               value: _entry.currentSeason,
@@ -301,7 +285,6 @@ class _MediaDetailScreenState extends State<MediaDetailScreen> {
             ),
           ),
           _pair(
-            theme,
             'CURRENT EPISODE',
             NumberStepper(
               value: _entry.currentEpisode,

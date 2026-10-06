@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../services/theme_controller.dart';
 import '../theme.dart';
+import 'caption.dart';
 
 class ScreenHeader extends StatelessWidget {
   const ScreenHeader({super.key, required this.caption, required this.title});
@@ -20,11 +21,7 @@ class ScreenHeader extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: AppSpacing.sm),
-              Text(
-                caption,
-                style: theme.textTheme.labelSmall
-                    ?.copyWith(color: theme.colorScheme.secondary),
-              ),
+              Caption(caption),
               const SizedBox(height: AppSpacing.xs),
               Text(title, style: theme.textTheme.headlineLarge),
             ],

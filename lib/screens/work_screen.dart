@@ -4,6 +4,7 @@ import '../models/project.dart';
 import '../models/work_log.dart';
 import '../services/storage_service.dart';
 import '../theme.dart';
+import '../widgets/date_field.dart';
 import '../widgets/screen_header.dart';
 import '../widgets/add_entry_sheet.dart';
 import '../widgets/dismissible_row.dart';
@@ -59,26 +60,11 @@ class _WorkScreenState extends State<WorkScreen> {
     final daysAgo = DateTime(today.year, today.month, today.day)
         .difference(DateTime(last.year, last.month, last.day))
         .inDays;
-    const weekdays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-    const months = [
-      'Jan',
-      'Feb',
-      'Mar',
-      'Apr',
-      'May',
-      'Jun',
-      'Jul',
-      'Aug',
-      'Sep',
-      'Oct',
-      'Nov',
-      'Dec',
-    ];
     final when = daysAgo == 0
         ? 'today'
         : (daysAgo > 0 && daysAgo < 7)
-            ? weekdays[last.weekday - 1]
-            : '${last.day} ${months[last.month - 1]}';
+            ? weekdayNames[last.weekday - 1]
+            : '${last.day} ${monthNames[last.month - 1]}';
     return '${p.subtitle} · last logged $when';
   }
 
@@ -183,8 +169,10 @@ class _WorkScreenState extends State<WorkScreen> {
                                 pillar: Pillar.work,
                                 title: p.title,
                                 subtitle: _rowSubtitle(p),
-                                meta:
-                                    '${_hoursThisWeek(p.id).toStringAsFixed(1)} h',
+                                trailing: Text(
+                                  '${_hoursThisWeek(p.id).toStringAsFixed(1)} h',
+                                  style: Theme.of(context).textTheme.labelLarge,
+                                ),
                                 onTap: () => _openDetail(p),
                               ),
                             ),

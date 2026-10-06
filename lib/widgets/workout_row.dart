@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../models/workout.dart';
 import '../theme.dart';
+import 'caption.dart';
 
 class WorkoutRow extends StatelessWidget {
   const WorkoutRow({
@@ -44,23 +45,22 @@ class WorkoutRow extends StatelessWidget {
                       Text(
                         workout.label,
                         style: theme.textTheme.bodyMedium?.copyWith(
-                          decoration: workout.done ? TextDecoration.lineThrough : null,
-                          color: workout.done ? theme.colorScheme.secondary : null,
+                          decoration:
+                              workout.done ? TextDecoration.lineThrough : null,
+                          color:
+                              workout.done ? theme.colorScheme.secondary : null,
                         ),
                       ),
                       const SizedBox(height: AppSpacing.xs),
-                      Text(
-                        subtitle,
-                        style: theme.textTheme.labelSmall
-                            ?.copyWith(color: theme.colorScheme.secondary),
-                      ),
+                      Caption(subtitle),
                     ],
                   ),
                 ),
               ),
               Padding(
                 padding: const EdgeInsets.only(right: AppSpacing.sm),
-                child: Text('${workout.durationMinutes} min', style: theme.textTheme.labelLarge),
+                child: Text('${workout.durationMinutes} min',
+                    style: theme.textTheme.labelLarge),
               ),
             ],
           ),

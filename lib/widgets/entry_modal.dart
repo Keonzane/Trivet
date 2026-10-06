@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../theme.dart';
+import 'caption.dart';
 
 class EntryModal extends StatelessWidget {
   const EntryModal({
@@ -96,15 +97,10 @@ class LabelledField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          label.toUpperCase(),
-          style: theme.textTheme.labelSmall
-              ?.copyWith(color: theme.colorScheme.secondary),
-        ),
+        Caption(label.toUpperCase()),
         const SizedBox(height: AppSpacing.xs),
         child,
       ],

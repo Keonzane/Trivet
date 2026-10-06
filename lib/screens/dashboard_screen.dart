@@ -7,6 +7,8 @@ import '../models/work_log.dart';
 import '../models/workout.dart';
 import '../services/storage_service.dart';
 import '../theme.dart';
+import '../widgets/caption.dart';
+import '../widgets/date_field.dart';
 import '../widgets/screen_header.dart';
 import '../widgets/add_entry_sheet.dart';
 import '../widgets/media_card.dart';
@@ -194,11 +196,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
-                    'CURRENTLY ENJOYING',
-                    style: theme.textTheme.labelSmall
-                        ?.copyWith(color: theme.colorScheme.secondary),
-                  ),
+                  const Caption('CURRENTLY ENJOYING'),
                   TextButton(
                     onPressed: widget.onSeeAllLeisure,
                     child: const Text('SEE ALL'),
@@ -246,25 +244,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   String _weekRangeLabel(WeekRange week) {
-    const months = [
-      'JAN',
-      'FEB',
-      'MAR',
-      'APR',
-      'MAY',
-      'JUN',
-      'JUL',
-      'AUG',
-      'SEP',
-      'OCT',
-      'NOV',
-      'DEC',
-    ];
-    const days = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'];
     final start = week.start;
     final end = start.add(const Duration(days: 6));
-    return '${days[start.weekday - 1]} ${start.day} – '
-        '${days[end.weekday - 1]} ${end.day} ${months[end.month - 1]}';
+    return '${weekdayNames[start.weekday - 1]} ${start.day} – '
+            '${weekdayNames[end.weekday - 1]} ${end.day} ${monthNames[end.month - 1]}'
+        .toUpperCase();
   }
 
   String _nudgeFor({

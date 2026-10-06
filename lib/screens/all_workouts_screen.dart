@@ -4,6 +4,7 @@ import '../models/workout.dart';
 import '../services/storage_service.dart';
 import '../theme.dart';
 import '../widgets/add_entry_sheet.dart';
+import '../widgets/caption.dart';
 import '../widgets/date_field.dart';
 import '../widgets/dismissible_row.dart';
 import '../widgets/empty_state.dart';
@@ -62,7 +63,6 @@ class _AllWorkoutsScreenState extends State<AllWorkoutsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     final sorted = [..._workouts]..sort((a, b) => b.date.compareTo(a.date));
 
     final groups = <DateTime, List<Workout>>{};
@@ -86,18 +86,11 @@ class _AllWorkoutsScreenState extends State<AllWorkoutsScreen> {
               : ListView(
                   padding: const EdgeInsets.all(AppSpacing.md),
                   children: [
-                    Text(
-                      '${sorted.where((w) => w.done).length} OF ${sorted.length} DONE',
-                      style: theme.textTheme.labelSmall
-                          ?.copyWith(color: theme.colorScheme.secondary),
-                    ),
+                    Caption(
+                        '${sorted.where((w) => w.done).length} OF ${sorted.length} DONE'),
                     for (final entry in groups.entries) ...[
                       const SizedBox(height: AppSpacing.lg),
-                      Text(
-                        formatShortDate(entry.key).toUpperCase(),
-                        style: theme.textTheme.labelSmall
-                            ?.copyWith(color: theme.colorScheme.secondary),
-                      ),
+                      Caption(formatShortDate(entry.key).toUpperCase()),
                       const SizedBox(height: AppSpacing.sm),
                       for (final w in entry.value) ...[
                         DismissibleRow(

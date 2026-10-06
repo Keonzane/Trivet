@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../models/media_entry.dart';
 import '../theme.dart';
+import 'pillar_card.dart';
 
 class MediaCard extends StatelessWidget {
   const MediaCard({
@@ -55,62 +56,24 @@ class MediaCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final accent = context.pillars.of(Pillar.leisure);
-
-    return Card(
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
-        child: Row(
-          children: [
-            Container(
-              width: 4,
-              height: 56,
-              decoration: BoxDecoration(
-                color: accent,
-                borderRadius:
-                    const BorderRadius.horizontal(left: Radius.circular(12)),
-              ),
-            ),
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppSpacing.md,
-                  vertical: AppSpacing.sm + AppSpacing.xs,
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(entry.title, style: theme.textTheme.bodyMedium),
-                    if (entry.status != MediaStatus.want) ...[
-                      const SizedBox(height: AppSpacing.xs),
-                      Text(
-                        _subtitle,
-                        style: theme.textTheme.labelSmall
-                            ?.copyWith(color: theme.colorScheme.secondary),
-                      ),
-                    ],
-                  ],
-                ),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.only(right: AppSpacing.md),
-              child: switch (entry.status) {
-                MediaStatus.want => Text(
-                    entry.type.label,
-                    style: theme.textTheme.labelLarge
-                        ?.copyWith(color: theme.colorScheme.secondary),
-                  ),
-                MediaStatus.inProgress =>
-                  Text(_progress, style: theme.textTheme.labelLarge),
-                MediaStatus.done =>
-                  _Stars(rating: entry.rating ?? 0, color: accent),
-              },
-            ),
-          ],
-        ),
-      ),
+    return PillarCard(
+      pillar: Pillar.leisure,
+      title: entry.title,
+      subtitle: entry.status == MediaStatus.want ? null : _subtitle,
+      onTap: onTap,
+      trailing: switch (entry.status) {
+        MediaStatus.want => Text(
+            entry.type.label,
+            style: theme.textTheme.labelLarge
+                ?.copyWith(color: theme.colorScheme.secondary),
+          ),
+        MediaStatus.inProgress =>
+          Text(_progress, style: theme.textTheme.labelLarge),
+        MediaStatus.done => _Stars(
+            rating: entry.rating ?? 0,
+            color: context.pillars.of(Pillar.leisure),
+          ),
+      },
     );
   }
 }

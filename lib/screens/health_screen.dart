@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../models/workout.dart';
 import '../services/storage_service.dart';
 import '../theme.dart';
+import '../widgets/caption.dart';
 import '../widgets/screen_header.dart';
 import '../widgets/add_entry_sheet.dart';
 import '../widgets/date_field.dart';
@@ -105,7 +106,6 @@ class _HealthScreenState extends State<HealthScreen> {
       return const Center(child: CircularProgressIndicator());
     }
 
-    final theme = Theme.of(context);
     final week = WeekRange.containing(DateTime.now());
     final weekWorkouts = _workouts.where((w) => week.contains(w.date)).toList()
       ..sort((a, b) => b.date.compareTo(a.date));
@@ -115,12 +115,11 @@ class _HealthScreenState extends State<HealthScreen> {
 
     final today = DateTime.now();
     final startOfToday = DateTime(today.year, today.month, today.day);
-    bool isToday(DateTime d) =>
-        d.year == today.year && d.month == today.month && d.day == today.day;
 
-    final todays = weekWorkouts.where((w) => isToday(w.date)).toList();
+    final todays = weekWorkouts.where((w) => isSameDay(w.date, today)).toList();
     final earlier = weekWorkouts
-        .where((w) => !isToday(w.date) && w.date.isBefore(startOfToday))
+        .where(
+            (w) => !isSameDay(w.date, today) && w.date.isBefore(startOfToday))
         .toList();
     final upcoming = _workouts.where((w) => w.date.isAfter(today)).toList()
       ..sort((a, b) => a.date.compareTo(b.date));
@@ -179,9 +178,7 @@ class _HealthScreenState extends State<HealthScreen> {
             ),
             const SizedBox(height: AppSpacing.lg),
             if (todays.isNotEmpty) ...[
-              Text('TODAY',
-                  style: theme.textTheme.labelSmall
-                      ?.copyWith(color: theme.colorScheme.secondary)),
+              const Caption('TODAY'),
               const SizedBox(height: AppSpacing.sm),
               for (final w in todays) ...[
                 rowFor(w,
@@ -193,12 +190,8 @@ class _HealthScreenState extends State<HealthScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text('MINUTES PER DAY',
-                    style: theme.textTheme.labelSmall
-                        ?.copyWith(color: theme.colorScheme.secondary)),
-                Text('$weekMinutes TOTAL',
-                    style: theme.textTheme.labelSmall
-                        ?.copyWith(color: theme.colorScheme.secondary)),
+                const Caption('MINUTES PER DAY'),
+                Caption('$weekMinutes TOTAL'),
               ],
             ),
             const SizedBox(height: AppSpacing.sm),
@@ -211,9 +204,7 @@ class _HealthScreenState extends State<HealthScreen> {
             ),
             const SizedBox(height: AppSpacing.lg),
             if (upcoming.isNotEmpty) ...[
-              Text('UPCOMING',
-                  style: theme.textTheme.labelSmall
-                      ?.copyWith(color: theme.colorScheme.secondary)),
+              const Caption('UPCOMING'),
               const SizedBox(height: AppSpacing.sm),
               for (final w in upcoming) ...[
                 rowFor(w, 'Gym · ${formatShortDate(w.date)}'),
@@ -222,13 +213,11 @@ class _HealthScreenState extends State<HealthScreen> {
               const SizedBox(height: AppSpacing.sm),
             ],
             if (earlier.isNotEmpty) ...[
-              Text('EARLIER THIS WEEK',
-                  style: theme.textTheme.labelSmall
-                      ?.copyWith(color: theme.colorScheme.secondary)),
+              const Caption('EARLIER THIS WEEK'),
               const SizedBox(height: AppSpacing.sm),
               for (final w in earlier) ...[
                 rowFor(w,
-                    'Gym · ${_weekday(w.date)} ${TimeOfDay.fromDateTime(w.date).format(context)}'),
+                    'Gym · ${weekdayNames[w.date.weekday - 1]} ${TimeOfDay.fromDateTime(w.date).format(context)}'),
                 const SizedBox(height: AppSpacing.sm),
               ],
             ],
@@ -255,10 +244,5 @@ class _HealthScreenState extends State<HealthScreen> {
         ),
       ),
     );
-  }
-
-  String _weekday(DateTime d) {
-    const names = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-    return names[d.weekday - 1];
   }
 }

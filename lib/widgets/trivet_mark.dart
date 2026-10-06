@@ -10,20 +10,18 @@ class TrivetMark extends StatelessWidget {
     required this.work,
     required this.health,
     required this.leisure,
-    this.size = 180,
   });
 
   final double work;
   final double health;
   final double leisure;
-  final double size;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return SizedBox(
-      width: size,
-      height: size,
+      width: 180,
+      height: 180,
       child: CustomPaint(
         painter: _TrivetMarkPainter(
           work: work,
