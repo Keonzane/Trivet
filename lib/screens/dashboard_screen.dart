@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 
 import '../models/leisure_log.dart';
 import '../models/media_entry.dart';
-import '../models/project.dart';
 import '../models/work_log.dart';
 import '../models/workout.dart';
 import '../services/storage_service.dart';
@@ -27,13 +26,11 @@ class DashboardScreen extends StatefulWidget {
 }
 
 class _DashboardScreenState extends State<DashboardScreen> {
-  final _projectStore = ProjectStore();
   final _workLogStore = WorkLogStore();
   final _workoutStore = WorkoutStore();
   final _mediaStore = MediaStore();
   final _leisureLogStore = LeisureLogStore();
 
-  List<Project> _projects = [];
   List<WorkLog> _workLogs = [];
   List<Workout> _workouts = [];
   List<MediaEntry> _media = [];
@@ -48,18 +45,17 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   Future<void> _load() async {
     final results = await Future.wait([
-      _projectStore.load(),
       _workLogStore.load(),
       _workoutStore.load(),
       _mediaStore.load(),
       _leisureLogStore.load(),
     ]);
+    if (!mounted) return;
     setState(() {
-      _projects = results[0] as List<Project>;
-      _workLogs = results[1] as List<WorkLog>;
-      _workouts = results[2] as List<Workout>;
-      _media = results[3] as List<MediaEntry>;
-      _leisureLogs = results[4] as List<LeisureLog>;
+      _workLogs = results[0] as List<WorkLog>;
+      _workouts = results[1] as List<Workout>;
+      _media = results[2] as List<MediaEntry>;
+      _leisureLogs = results[3] as List<LeisureLog>;
       _loading = false;
     });
   }
@@ -225,22 +221,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   Future<void> _openMediaDetail(MediaEntry entry) async {
     await Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) => MediaDetailScreen(
-          entry: entry,
-          onUpdate: (updated) async {
-            _media = [
-              for (final e in _media)
-                if (e.id == updated.id) updated else e,
-            ];
-            await _mediaStore.save(_media);
-            if (mounted) setState(() {});
-          },
-        ),
-      ),
+      MaterialPageRoute(builder: (context) => MediaDetailScreen(entry: entry)),
     );
-    final logs = await _leisureLogStore.load();
-    if (mounted) setState(() => _leisureLogs = logs);
+    await _load();
   }
 
   String _weekRangeLabel(WeekRange week) {
@@ -270,29 +253,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   Future<void> _openAddEntry() async {
-    await showAddEntrySheet(
-      context: context,
-      initialPillar: null,
-      onSaveWork: (project, log) async {
-        if (!_projects.any((p) => p.id == project.id)) {
-          _projects = [..._projects, project];
-          await _projectStore.save(_projects);
-        }
-        _workLogs = [..._workLogs, log];
-        await _workLogStore.save(_workLogs);
-        if (mounted) setState(() {});
-      },
-      onSaveHealth: (w) async {
-        _workouts = [..._workouts, w];
-        await _workoutStore.save(_workouts);
-        if (mounted) setState(() {});
-      },
-      onSaveLeisure: (entry) async {
-        _media = [..._media, entry];
-        await _mediaStore.save(_media);
-        if (mounted) setState(() {});
-      },
-    );
+    await showAddEntrySheet(context: context);
+    await _load();
   }
 }
 

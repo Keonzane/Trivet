@@ -2,6 +2,14 @@ enum MediaType { book, film, series, game }
 
 enum MediaStatus { want, inProgress, done }
 
+extension MediaStatusLabel on MediaStatus {
+  String get label => switch (this) {
+        MediaStatus.want => 'Want',
+        MediaStatus.inProgress => 'In progress',
+        MediaStatus.done => 'Done',
+      };
+}
+
 extension MediaTypeLabel on MediaType {
   String get label {
     switch (this) {
@@ -22,18 +30,20 @@ class MediaEntry {
   final String title;
   final MediaType type;
   final MediaStatus status;
-  final int? rating;
-  final int durationMinutes;
+  final int? rating; // 1-5, only meaningful once done
+
+  final int durationMinutes; // time spent: books and games
   final int totalPages;
   final int currentPage;
-  final int totalMinutes;
-  final int stoppedMinutes;
+  final int totalMinutes; // runtime: films and series
+  final int stoppedMinutes; // where you stopped: films and series
   final int totalSeasons;
   final int currentSeason;
   final int totalEpisodes;
   final int currentEpisode;
 
   final String notes;
+  final String review;
 
   const MediaEntry({
     required this.id,
@@ -51,6 +61,7 @@ class MediaEntry {
     this.totalEpisodes = 1,
     this.currentEpisode = 1,
     this.notes = '',
+    this.review = '',
   });
 
   int get trackedMinutes => type == MediaType.film || type == MediaType.series
@@ -78,6 +89,7 @@ class MediaEntry {
     int? totalEpisodes,
     int? currentEpisode,
     String? notes,
+    String? review,
   }) {
     return MediaEntry(
       id: id ?? this.id,
@@ -95,6 +107,7 @@ class MediaEntry {
       totalEpisodes: totalEpisodes ?? this.totalEpisodes,
       currentEpisode: currentEpisode ?? this.currentEpisode,
       notes: notes ?? this.notes,
+      review: review ?? this.review,
     );
   }
 
@@ -114,6 +127,7 @@ class MediaEntry {
         'totalEpisodes': totalEpisodes,
         'currentEpisode': currentEpisode,
         'notes': notes,
+        'review': review,
       };
 
   factory MediaEntry.fromMap(Map<String, dynamic> map) => MediaEntry(
@@ -132,5 +146,6 @@ class MediaEntry {
         totalEpisodes: map['totalEpisodes'] as int? ?? 1,
         currentEpisode: map['currentEpisode'] as int? ?? 1,
         notes: map['notes'] as String? ?? '',
+        review: map['review'] as String? ?? '',
       );
 }

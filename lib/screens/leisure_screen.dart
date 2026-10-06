@@ -39,6 +39,7 @@ class _LeisureScreenState extends State<LeisureScreen> {
   Future<void> _load() async {
     final entries = await _mediaStore.load();
     final logs = await _logStore.load();
+    if (!mounted) return;
     setState(() {
       _entries = entries;
       _logs = logs;
@@ -55,14 +56,8 @@ class _LeisureScreenState extends State<LeisureScreen> {
   }
 
   Future<void> _addTitle() async {
-    await showAddEntrySheet(
-      context: context,
-      initialPillar: Pillar.leisure,
-      onSaveLeisure: (entry) async {
-        setState(() => _entries = [..._entries, entry]);
-        await _mediaStore.save(_entries);
-      },
-    );
+    await showAddEntrySheet(context: context, initialPillar: Pillar.leisure);
+    await _load();
   }
 
   Future<void> _deleteTitle(MediaEntry e) async {
@@ -76,23 +71,9 @@ class _LeisureScreenState extends State<LeisureScreen> {
 
   Future<void> _openDetail(MediaEntry entry) async {
     await Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) => MediaDetailScreen(
-          entry: entry,
-          onUpdate: (updated) async {
-            setState(() {
-              _entries = [
-                for (final e in _entries)
-                  if (e.id == updated.id) updated else e,
-              ];
-            });
-            await _mediaStore.save(_entries);
-          },
-        ),
-      ),
+      MaterialPageRoute(builder: (context) => MediaDetailScreen(entry: entry)),
     );
-    final logs = await _logStore.load();
-    if (mounted) setState(() => _logs = logs);
+    await _load();
   }
 
   @override
@@ -127,11 +108,7 @@ class _LeisureScreenState extends State<LeisureScreen> {
                     : SectionedList<MediaStatus>(
                         sections: MediaStatus.values,
                         initial: widget.initialFilter ?? MediaStatus.want,
-                        labelOf: (s) => switch (s) {
-                          MediaStatus.want => 'Want',
-                          MediaStatus.inProgress => 'In progress',
-                          MediaStatus.done => 'Done',
-                        },
+                        labelOf: (s) => s.label,
                         itemsOf: (s) => [
                           for (final e in _entries.where((e) => e.status == s))
                             DismissibleRow(

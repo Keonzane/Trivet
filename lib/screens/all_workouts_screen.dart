@@ -31,6 +31,7 @@ class _AllWorkoutsScreenState extends State<AllWorkoutsScreen> {
 
   Future<void> _load() async {
     final workouts = await _store.load();
+    if (!mounted) return;
     setState(() {
       _workouts = workouts;
       _loading = false;
@@ -57,8 +58,8 @@ class _AllWorkoutsScreenState extends State<AllWorkoutsScreen> {
       context: context,
       initialPillar: Pillar.health,
       initialWorkout: w,
-      onSaveHealth: _replace,
     );
+    await _load();
   }
 
   @override

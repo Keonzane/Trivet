@@ -11,20 +11,21 @@ import '../widgets/number_stepper.dart';
 import '../widgets/screen_header.dart';
 
 class MediaDetailScreen extends StatefulWidget {
-  const MediaDetailScreen(
-      {super.key, required this.entry, required this.onUpdate});
+  const MediaDetailScreen({super.key, required this.entry});
 
   final MediaEntry entry;
-  final ValueChanged<MediaEntry> onUpdate;
 
   @override
   State<MediaDetailScreen> createState() => _MediaDetailScreenState();
 }
 
 class _MediaDetailScreenState extends State<MediaDetailScreen> {
+  final _mediaStore = MediaStore();
   final _logStore = LeisureLogStore();
   late MediaEntry _entry;
+  List<MediaEntry> _allMedia = [];
   late final TextEditingController _notesController;
+  late final TextEditingController _reviewController;
   List<LeisureLog> _allLogs = [];
   bool _loading = true;
 
@@ -33,26 +34,35 @@ class _MediaDetailScreenState extends State<MediaDetailScreen> {
     super.initState();
     _entry = widget.entry;
     _notesController = TextEditingController(text: _entry.notes);
+    _reviewController = TextEditingController(text: _entry.review);
     _load();
   }
 
   @override
   void dispose() {
     _notesController.dispose();
+    _reviewController.dispose();
     super.dispose();
   }
 
   Future<void> _load() async {
-    final all = await _logStore.load();
+    final media = await _mediaStore.load();
+    final logs = await _logStore.load();
+    if (!mounted) return;
     setState(() {
-      _allLogs = all;
+      _allMedia = media;
+      _allLogs = logs;
       _loading = false;
     });
   }
 
   void _update(MediaEntry Function(MediaEntry) change) {
     setState(() => _entry = change(_entry));
-    widget.onUpdate(_entry);
+    _allMedia = [
+      for (final e in _allMedia)
+        if (e.id == _entry.id) _entry else e,
+    ];
+    _mediaStore.save(_allMedia);
   }
 
   Future<void> _setTracked(int minutes) async {
@@ -112,6 +122,10 @@ class _MediaDetailScreenState extends State<MediaDetailScreen> {
     _update((e) => e.copyWith(notes: _notesController.text.trim()));
   }
 
+  void _saveReview() {
+    _update((e) => e.copyWith(review: _reviewController.text.trim()));
+  }
+
   Widget _field(String label, Widget child) => Padding(
         padding: const EdgeInsets.only(bottom: AppSpacing.md),
         child: Column(
@@ -156,14 +170,9 @@ class _MediaDetailScreenState extends State<MediaDetailScreen> {
                     SegmentedButton<MediaStatus>(
                       showSelectedIcon: false,
                       expandedInsets: EdgeInsets.zero,
-                      segments: const [
-                        ButtonSegment(
-                            value: MediaStatus.want, label: Text('Want')),
-                        ButtonSegment(
-                            value: MediaStatus.inProgress,
-                            label: Text('In progress')),
-                        ButtonSegment(
-                            value: MediaStatus.done, label: Text('Done')),
+                      segments: [
+                        for (final s in MediaStatus.values)
+                          ButtonSegment(value: s, label: Text(s.label)),
                       ],
                       selected: {_entry.status},
                       onSelectionChanged: (s) => _setStatus(s.first),
@@ -220,12 +229,12 @@ class _MediaDetailScreenState extends State<MediaDetailScreen> {
           _field(
             'REVIEW',
             TextField(
-              controller: _notesController,
+              controller: _reviewController,
               maxLines: 4,
               decoration:
                   const InputDecoration(hintText: 'What did you think?'),
-              onEditingComplete: _saveNotes,
-              onTapOutside: (_) => _saveNotes(),
+              onEditingComplete: _saveReview,
+              onTapOutside: (_) => _saveReview(),
             ),
           ),
         ];

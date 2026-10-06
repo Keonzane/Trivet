@@ -4,27 +4,26 @@ import '../models/project.dart';
 import '../models/work_log.dart';
 import '../services/storage_service.dart';
 import '../theme.dart';
-import '../widgets/caption.dart';
-import '../widgets/screen_header.dart';
 import '../widgets/add_entry_sheet.dart';
+import '../widgets/caption.dart';
 import '../widgets/date_field.dart';
 import '../widgets/pillar_button.dart';
+import '../widgets/screen_header.dart';
 
 class ProjectDetailScreen extends StatefulWidget {
-  const ProjectDetailScreen(
-      {super.key, required this.project, required this.onUpdate});
+  const ProjectDetailScreen({super.key, required this.project});
 
   final Project project;
-
-  final ValueChanged<Project> onUpdate;
 
   @override
   State<ProjectDetailScreen> createState() => _ProjectDetailScreenState();
 }
 
 class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
+  final _projectStore = ProjectStore();
   final _logStore = WorkLogStore();
   late Project _project;
+  List<Project> _allProjects = [];
   late final TextEditingController _notesController;
   List<WorkLog> _allLogs = [];
   bool _loading = true;
@@ -44,11 +43,23 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
   }
 
   Future<void> _load() async {
-    final all = await _logStore.load();
+    final projects = await _projectStore.load();
+    final logs = await _logStore.load();
+    if (!mounted) return;
     setState(() {
-      _allLogs = all;
+      _allProjects = projects;
+      _allLogs = logs;
       _loading = false;
     });
+  }
+
+  void _update(Project Function(Project) change) {
+    setState(() => _project = change(_project));
+    _allProjects = [
+      for (final p in _allProjects)
+        if (p.id == _project.id) _project else p,
+    ];
+    _projectStore.save(_allProjects);
   }
 
   List<WorkLog> get _projectLogs =>
@@ -64,14 +75,11 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
   }
 
   void _setStatus(ProjectStatus status) {
-    setState(() => _project = _project.copyWith(status: status));
-    widget.onUpdate(_project);
+    _update((p) => p.copyWith(status: status));
   }
 
   void _saveNotes() {
-    setState(() =>
-        _project = _project.copyWith(notes: _notesController.text.trim()));
-    widget.onUpdate(_project);
+    _update((p) => p.copyWith(notes: _notesController.text.trim()));
   }
 
   Future<void> _logMoreHours() async {
@@ -79,12 +87,8 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
       context: context,
       initialPillar: Pillar.work,
       initialProject: _project,
-      onSaveWork: (project, log) async {
-        _allLogs = [..._allLogs, log];
-        await _logStore.save(_allLogs);
-        if (mounted) setState(() {});
-      },
     );
+    await _load();
   }
 
   @override
@@ -121,13 +125,9 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
                     SegmentedButton<ProjectStatus>(
                       showSelectedIcon: false,
                       expandedInsets: EdgeInsets.zero,
-                      segments: const [
-                        ButtonSegment(
-                            value: ProjectStatus.active, label: Text('Active')),
-                        ButtonSegment(
-                            value: ProjectStatus.paused, label: Text('Paused')),
-                        ButtonSegment(
-                            value: ProjectStatus.done, label: Text('Done')),
+                      segments: [
+                        for (final s in ProjectStatus.values)
+                          ButtonSegment(value: s, label: Text(s.label)),
                       ],
                       selected: {_project.status},
                       onSelectionChanged: (s) => _setStatus(s.first),

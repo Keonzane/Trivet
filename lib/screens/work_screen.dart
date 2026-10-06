@@ -38,6 +38,7 @@ class _WorkScreenState extends State<WorkScreen> {
   Future<void> _load() async {
     final projects = await _projectStore.load();
     final logs = await _workLogStore.load();
+    if (!mounted) return;
     setState(() {
       _projects = projects;
       _logs = logs;
@@ -68,43 +69,16 @@ class _WorkScreenState extends State<WorkScreen> {
     return '${p.subtitle} · last logged $when';
   }
 
-  Future<void> _addHours(Project? project) async {
-    await showAddEntrySheet(
-      context: context,
-      initialPillar: Pillar.work,
-      initialProject: project,
-      onSaveWork: (project, log) async {
-        setState(() {
-          if (!_projects.any((p) => p.id == project.id)) {
-            _projects = [..._projects, project];
-          }
-          _logs = [..._logs, log];
-        });
-        await _projectStore.save(_projects);
-        await _workLogStore.save(_logs);
-      },
-    );
+  Future<void> _addProject() async {
+    await showAddEntrySheet(context: context, initialPillar: Pillar.work);
+    await _load();
   }
 
   Future<void> _openDetail(Project p) async {
     await Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) => ProjectDetailScreen(
-          project: p,
-          onUpdate: (updated) async {
-            setState(() {
-              _projects = [
-                for (final x in _projects)
-                  if (x.id == updated.id) updated else x,
-              ];
-            });
-            await _projectStore.save(_projects);
-          },
-        ),
-      ),
+      MaterialPageRoute(builder: (context) => ProjectDetailScreen(project: p)),
     );
-    final logs = await _workLogStore.load();
-    if (mounted) setState(() => _logs = logs);
+    await _load();
   }
 
   Future<void> _deleteProject(Project p) async {
@@ -147,16 +121,12 @@ class _WorkScreenState extends State<WorkScreen> {
                             'No projects yet. Add one to start logging hours.',
                         icon: Icons.work_outline,
                         actionLabel: '+ Add project',
-                        onAction: () => _addHours(null),
+                        onAction: _addProject,
                       )
                     : SectionedList<ProjectStatus>(
                         sections: ProjectStatus.values,
                         initial: ProjectStatus.active,
-                        labelOf: (s) => switch (s) {
-                          ProjectStatus.active => 'Active',
-                          ProjectStatus.paused => 'Paused',
-                          ProjectStatus.done => 'Done',
-                        },
+                        labelOf: (s) => s.label,
                         itemsOf: (s) => [
                           for (final p in _projects.where((p) => p.status == s))
                             DismissibleRow(
@@ -183,7 +153,7 @@ class _WorkScreenState extends State<WorkScreen> {
               PillarButton(
                 pillar: Pillar.work,
                 label: '+ Add project',
-                onPressed: () => _addHours(null),
+                onPressed: _addProject,
               ),
               const SizedBox(height: AppSpacing.md),
             ],

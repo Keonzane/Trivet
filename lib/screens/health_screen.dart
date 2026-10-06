@@ -35,6 +35,7 @@ class _HealthScreenState extends State<HealthScreen> {
 
   Future<void> _load() async {
     final workouts = await _store.load();
+    if (!mounted) return;
     setState(() {
       _workouts = workouts;
       _loading = false;
@@ -46,17 +47,8 @@ class _HealthScreenState extends State<HealthScreen> {
       context: context,
       initialPillar: Pillar.health,
       initialWorkout: existing,
-      onSaveHealth: (w) async {
-        setState(() {
-          _workouts = [
-            for (final existingW in _workouts)
-              if (existingW.id != w.id) existingW,
-            w,
-          ];
-        });
-        await _store.save(_workouts);
-      },
     );
+    await _load();
   }
 
   Future<void> _toggleDone(Workout w) async {

@@ -4,6 +4,7 @@ import '../models/media_entry.dart';
 import '../models/project.dart';
 import '../models/work_log.dart';
 import '../models/workout.dart';
+import '../services/storage_service.dart';
 import '../theme.dart';
 import 'app_text_field.dart';
 import 'date_field.dart';
@@ -15,20 +16,7 @@ Future<void> showAddEntrySheet({
   Pillar? initialPillar,
   Project? initialProject,
   Workout? initialWorkout,
-  void Function(Project project, WorkLog log)? onSaveWork,
-  void Function(Workout workout)? onSaveHealth,
-  void Function(MediaEntry entry)? onSaveLeisure,
 }) {
-  assert(
-    switch (initialPillar) {
-      null =>
-        onSaveWork != null && onSaveHealth != null && onSaveLeisure != null,
-      Pillar.work => onSaveWork != null,
-      Pillar.health => onSaveHealth != null,
-      Pillar.leisure => onSaveLeisure != null,
-    },
-    'showAddEntrySheet needs a save callback for every pillar the picker can land on.',
-  );
   return showModalBottomSheet(
     context: context,
     isScrollControlled: true,
@@ -36,9 +24,6 @@ Future<void> showAddEntrySheet({
       initialPillar: initialPillar,
       initialProject: initialProject,
       initialWorkout: initialWorkout,
-      onSaveWork: onSaveWork,
-      onSaveHealth: onSaveHealth,
-      onSaveLeisure: onSaveLeisure,
     ),
   );
 }
@@ -48,17 +33,11 @@ class _AddEntrySheet extends StatefulWidget {
     required this.initialPillar,
     required this.initialProject,
     required this.initialWorkout,
-    required this.onSaveWork,
-    required this.onSaveHealth,
-    required this.onSaveLeisure,
   });
 
   final Pillar? initialPillar;
   final Project? initialProject;
   final Workout? initialWorkout;
-  final void Function(Project project, WorkLog log)? onSaveWork;
-  final void Function(Workout workout)? onSaveHealth;
-  final void Function(MediaEntry entry)? onSaveLeisure;
 
   @override
   State<_AddEntrySheet> createState() => _AddEntrySheetState();
@@ -131,64 +110,69 @@ class _AddEntrySheetState extends State<_AddEntrySheet> {
     }
   }
 
-  void _save() {
+  Future<void> _save() async {
+    final id = DateTime.now().microsecondsSinceEpoch.toString();
     switch (_pillar) {
       case null:
         return;
       case Pillar.work:
-        Project project;
-        if (widget.initialProject != null) {
-          project = widget.initialProject!;
-        } else {
+        var project = widget.initialProject;
+        if (project == null) {
           final title = _workNewTitleController.text.trim();
           if (title.isEmpty) {
             setState(() => _workTitleError = true);
             return;
           }
           project = Project(
-            id: DateTime.now().microsecondsSinceEpoch.toString(),
+            id: id,
             title: title,
             subtitle: 'Personal',
             status: ProjectStatus.active,
           );
+          final projectStore = ProjectStore();
+          await projectStore.save([...await projectStore.load(), project]);
         }
-        widget.onSaveWork?.call(
-          project,
+        final logStore = WorkLogStore();
+        await logStore.save([
+          ...await logStore.load(),
           WorkLog(
-            id: DateTime.now().microsecondsSinceEpoch.toString(),
-            projectId: project.id,
-            hours: _workMinutes / 60,
-            date: _workDate,
-          ),
-        );
-        Navigator.of(context).pop();
+              id: id,
+              projectId: project.id,
+              hours: _workMinutes / 60,
+              date: _workDate),
+        ]);
       case Pillar.health:
-        widget.onSaveHealth?.call(Workout(
-          id: widget.initialWorkout?.id ??
-              DateTime.now().microsecondsSinceEpoch.toString(),
+        final workout = Workout(
+          id: widget.initialWorkout?.id ?? id,
           type: _healthType,
           durationMinutes: _healthMinutes,
           date: _healthDate,
           notes: _healthNotesController.text.trim(),
           done: widget.initialWorkout?.done ?? false,
-        ));
-        Navigator.of(context).pop();
+        );
+        final store = WorkoutStore();
+        await store.save([
+          for (final w in await store.load())
+            if (w.id != workout.id) w,
+          workout,
+        ]);
       case Pillar.leisure:
         final title = _leisureNewTitleController.text.trim();
         if (title.isEmpty) {
           setState(() => _leisureTitleError = true);
           return;
         }
-        widget.onSaveLeisure?.call(
+        final store = MediaStore();
+        await store.save([
+          ...await store.load(),
           MediaEntry(
-            id: DateTime.now().microsecondsSinceEpoch.toString(),
-            title: title,
-            type: _leisureType,
-            status: MediaStatus.want,
-          ),
-        );
-        Navigator.of(context).pop();
+              id: id,
+              title: title,
+              type: _leisureType,
+              status: MediaStatus.want),
+        ]);
     }
+    if (mounted) Navigator.of(context).pop();
   }
 
   List<Widget> _fieldsForPillar() {

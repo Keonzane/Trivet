@@ -1,5 +1,13 @@
 enum ProjectStatus { active, paused, done }
 
+extension ProjectStatusLabel on ProjectStatus {
+  String get label => switch (this) {
+        ProjectStatus.active => 'Active',
+        ProjectStatus.paused => 'Paused',
+        ProjectStatus.done => 'Done',
+      };
+}
+
 class Project {
   final String id;
   final String title;
