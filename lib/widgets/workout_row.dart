@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 
 import '../models/workout.dart';
 import '../theme.dart';
-import 'caption.dart';
 import 'date_field.dart';
+import 'pillar_card.dart';
 
 class WorkoutRow extends StatelessWidget {
   const WorkoutRow({
@@ -34,52 +34,21 @@ class WorkoutRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final accent = context.pillars.of(Pillar.health);
-
-    return Card(
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xs),
-          child: Row(
-            children: [
-              Checkbox(
-                value: workout.done,
-                activeColor: accent,
-                onChanged: (_) => onToggleDone(),
-              ),
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        workout.label,
-                        style: theme.textTheme.bodyMedium?.copyWith(
-                          decoration:
-                              workout.done ? TextDecoration.lineThrough : null,
-                          color:
-                              workout.done ? theme.colorScheme.secondary : null,
-                        ),
-                      ),
-                      const SizedBox(height: AppSpacing.xs),
-                      Caption(_subtitle(context)),
-                    ],
-                  ),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.only(right: AppSpacing.sm),
-                child: Text('${workout.durationMinutes} min',
-                    style: theme.textTheme.labelLarge),
-              ),
-            ],
-          ),
-        ),
+    return PillarCard(
+      pillar: Pillar.health,
+      title: workout.label,
+      subtitle: _subtitle(context),
+      crossedOut: workout.done,
+      leading: Checkbox(
+        value: workout.done,
+        activeColor: context.pillars.of(Pillar.health),
+        onChanged: (_) => onToggleDone(),
       ),
+      trailing: Text(
+        '${workout.durationMinutes} min',
+        style: Theme.of(context).textTheme.labelLarge,
+      ),
+      onTap: onTap,
     );
   }
 }

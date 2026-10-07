@@ -65,6 +65,15 @@ class WorkoutStore extends ListStore<Workout> {
           toMap: (w) => w.toMap(),
           fromMap: Workout.fromMap,
         );
+
+  Future<List<Workout>> toggleDone(Workout workout) async {
+    final updated = [
+      for (final w in await load())
+        if (w.id == workout.id) w.toggledDone() else w,
+    ];
+    await save(updated);
+    return updated;
+  }
 }
 
 class MediaStore extends ListStore<MediaEntry> {

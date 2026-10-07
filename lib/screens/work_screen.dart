@@ -4,13 +4,12 @@ import '../models/project.dart';
 import '../models/work_log.dart';
 import '../services/storage_service.dart';
 import '../theme.dart';
-import '../widgets/date_field.dart';
 import '../widgets/screen_header.dart';
 import '../widgets/add_entry_sheet.dart';
 import '../widgets/dismissible_row.dart';
 import '../widgets/empty_state.dart';
 import '../widgets/pillar_button.dart';
-import '../widgets/pillar_card.dart';
+import '../widgets/project_card.dart';
 import '../widgets/sectioned_list.dart';
 import 'project_detail_screen.dart';
 
@@ -51,11 +50,6 @@ class _WorkScreenState extends State<WorkScreen> {
     return _logs
         .where((l) => l.projectId == projectId && week.contains(l.date))
         .fold(0.0, (sum, l) => sum + l.hours);
-  }
-
-  String _dueText(Project p) {
-    final due = p.dueDate;
-    return due == null ? 'Due: None' : 'Due: ${formatShortDate(due)}';
   }
 
   Future<void> _addProject() async {
@@ -124,14 +118,9 @@ class _WorkScreenState extends State<WorkScreen> {
                               confirmMessage:
                                   'This also removes every logged hour for this project.',
                               onDelete: () => _deleteProject(p),
-                              child: PillarCard(
-                                pillar: Pillar.work,
-                                title: p.title,
-                                subtitle: _dueText(p),
-                                trailing: Text(
-                                  '${_hoursThisWeek(p.id).toStringAsFixed(1)} h',
-                                  style: Theme.of(context).textTheme.labelLarge,
-                                ),
+                              child: ProjectCard(
+                                project: p,
+                                hoursThisWeek: _hoursThisWeek(p.id),
                                 onTap: () => _openDetail(p),
                               ),
                             ),

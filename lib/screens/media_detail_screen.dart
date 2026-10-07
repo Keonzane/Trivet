@@ -103,11 +103,10 @@ class _MediaDetailScreenState extends State<MediaDetailScreen> {
 
   Future<void> _setStatus(MediaStatus status) async {
     if (status != MediaStatus.want) {
-      _update((e) => e.copyWith(status: status));
+      _update((e) => e.withStatus(status));
       return;
     }
-    _update((e) => e.copyWith(
-          status: status,
+    _update((e) => e.withStatus(status).copyWith(
           durationMinutes: 0,
           currentPage: 0,
           stoppedMinutes: 0,

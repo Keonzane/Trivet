@@ -44,6 +44,7 @@ class MediaEntry {
 
   final String notes;
   final String review;
+  final DateTime? completedAt;
 
   const MediaEntry({
     required this.id,
@@ -62,6 +63,7 @@ class MediaEntry {
     this.currentEpisode = 1,
     this.notes = '',
     this.review = '',
+    this.completedAt,
   });
 
   int get trackedMinutes => type == MediaType.film || type == MediaType.series
@@ -108,8 +110,33 @@ class MediaEntry {
       currentEpisode: currentEpisode ?? this.currentEpisode,
       notes: notes ?? this.notes,
       review: review ?? this.review,
+      completedAt: completedAt,
     );
   }
+
+  MediaEntry withStatus(MediaStatus newStatus) => MediaEntry(
+        id: id,
+        title: title,
+        type: type,
+        status: newStatus,
+        rating: rating,
+        durationMinutes: durationMinutes,
+        totalPages: totalPages,
+        currentPage: currentPage,
+        totalMinutes: totalMinutes,
+        stoppedMinutes: stoppedMinutes,
+        totalSeasons: totalSeasons,
+        currentSeason: currentSeason,
+        totalEpisodes: totalEpisodes,
+        currentEpisode: currentEpisode,
+        notes: notes,
+        review: review,
+        completedAt: newStatus != MediaStatus.done
+            ? null
+            : status == MediaStatus.done
+                ? completedAt
+                : DateTime.now(),
+      );
 
   Map<String, dynamic> toMap() => {
         'id': id,
@@ -128,6 +155,7 @@ class MediaEntry {
         'currentEpisode': currentEpisode,
         'notes': notes,
         'review': review,
+        'completedAt': completedAt?.toIso8601String(),
       };
 
   factory MediaEntry.fromMap(Map<String, dynamic> map) => MediaEntry(
@@ -147,5 +175,8 @@ class MediaEntry {
         currentEpisode: map['currentEpisode'] as int? ?? 1,
         notes: map['notes'] as String? ?? '',
         review: map['review'] as String? ?? '',
+        completedAt: map['completedAt'] == null
+            ? null
+            : DateTime.parse(map['completedAt'] as String),
       );
 }

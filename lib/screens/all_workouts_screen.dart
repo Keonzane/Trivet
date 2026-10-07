@@ -38,14 +38,9 @@ class _AllWorkoutsScreenState extends State<AllWorkoutsScreen> {
     });
   }
 
-  Future<void> _replace(Workout w) async {
-    setState(() {
-      _workouts = [
-        for (final x in _workouts)
-          if (x.id == w.id) w else x,
-      ];
-    });
-    await _store.save(_workouts);
+  Future<void> _toggleDone(Workout w) async {
+    final workouts = await _store.toggleDone(w);
+    if (mounted) setState(() => _workouts = workouts);
   }
 
   Future<void> _delete(Workout w) async {
@@ -101,7 +96,7 @@ class _AllWorkoutsScreenState extends State<AllWorkoutsScreen> {
                           onDelete: () => _delete(w),
                           child: WorkoutRow(
                             workout: w,
-                            onToggleDone: () => _replace(w.toggledDone()),
+                            onToggleDone: () => _toggleDone(w),
                             onTap: () => _edit(w),
                           ),
                         ),

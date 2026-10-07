@@ -52,13 +52,8 @@ class _HealthScreenState extends State<HealthScreen> {
   }
 
   Future<void> _toggleDone(Workout w) async {
-    setState(() {
-      _workouts = [
-        for (final x in _workouts)
-          if (x.id == w.id) x.toggledDone() else x,
-      ];
-    });
-    await _store.save(_workouts);
+    final workouts = await _store.toggleDone(w);
+    if (mounted) setState(() => _workouts = workouts);
   }
 
   Future<void> _openAllWorkouts() async {
