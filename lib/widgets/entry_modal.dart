@@ -32,58 +32,60 @@ class EntryModal extends StatelessWidget {
         top: AppSpacing.sm,
         bottom: MediaQuery.viewInsetsOf(context).bottom + AppSpacing.md,
       ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Center(
-            child: Container(
-              width: 36,
-              height: 4,
-              margin: const EdgeInsets.only(bottom: AppSpacing.md),
-              decoration: BoxDecoration(
-                color: theme.colorScheme.outlineVariant,
-                borderRadius: BorderRadius.circular(2),
+      child: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(
+              child: Container(
+                width: 36,
+                height: 4,
+                margin: const EdgeInsets.only(bottom: AppSpacing.md),
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.outlineVariant,
+                  borderRadius: BorderRadius.circular(2),
+                ),
               ),
             ),
-          ),
-          Row(
-            children: [
-              Container(
-                width: 10,
-                height: 10,
-                margin: const EdgeInsets.only(right: AppSpacing.sm),
-                decoration:
-                    BoxDecoration(color: accent, shape: BoxShape.circle),
-              ),
-              Expanded(
-                  child: Text(title, style: theme.textTheme.headlineSmall)),
-              IconButton(
-                icon: const Icon(Icons.close),
-                onPressed: onCancel,
-                tooltip: 'Close',
-              ),
-            ],
-          ),
-          const SizedBox(height: AppSpacing.md),
-          for (final field in fields) ...[
-            field,
+            Row(
+              children: [
+                Container(
+                  width: 10,
+                  height: 10,
+                  margin: const EdgeInsets.only(right: AppSpacing.sm),
+                  decoration:
+                      BoxDecoration(color: accent, shape: BoxShape.circle),
+                ),
+                Expanded(
+                    child: Text(title, style: theme.textTheme.headlineSmall)),
+                IconButton(
+                  icon: const Icon(Icons.close),
+                  onPressed: onCancel,
+                  tooltip: 'Close',
+                ),
+              ],
+            ),
             const SizedBox(height: AppSpacing.md),
-          ],
-          Row(
-            children: [
-              Expanded(
-                child: OutlinedButton(
-                    onPressed: onCancel, child: const Text('Cancel')),
-              ),
-              const SizedBox(width: AppSpacing.sm),
-              Expanded(
-                child:
-                    FilledButton(onPressed: onSave, child: const Text('Save')),
-              ),
+            for (final field in fields) ...[
+              field,
+              const SizedBox(height: AppSpacing.md),
             ],
-          ),
-        ],
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton(
+                      onPressed: onCancel, child: const Text('Cancel')),
+                ),
+                const SizedBox(width: AppSpacing.sm),
+                Expanded(
+                  child: FilledButton(
+                      onPressed: onSave, child: const Text('Save')),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -101,7 +103,7 @@ class LabelledField extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Caption(label.toUpperCase()),
-        const SizedBox(height: AppSpacing.xs),
+        const SizedBox(height: AppSpacing.sm),
         child,
       ],
     );

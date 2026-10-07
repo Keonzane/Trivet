@@ -12,11 +12,13 @@ class ListStore<T> {
   final String key;
   final Map<String, dynamic> Function(T item) toMap;
   final T Function(Map<String, dynamic> map) fromMap;
+  final String Function(T item) idOf;
 
   ListStore({
     required this.key,
     required this.toMap,
     required this.fromMap,
+    required this.idOf,
   });
 
   Future<List<T>> load() async {
@@ -35,79 +37,102 @@ class ListStore<T> {
 
   Future<void> save(List<T> items) async {
     final prefs = await SharedPreferences.getInstance();
-    final raw = items.map((item) => jsonEncode(toMap(item))).toList();
-    await prefs.setStringList(key, raw);
+    await prefs.setStringList(
+        key, items.map((item) => jsonEncode(toMap(item))).toList());
+  }
+
+  Future<void> put(T item) async {
+    final items = await load();
+    final i = items.indexWhere((x) => idOf(x) == idOf(item));
+    if (i == -1) {
+      items.add(item);
+    } else {
+      items[i] = item;
+    }
+    await save(items);
+  }
+
+  Future<void> removeWhere(bool Function(T item) test) async {
+    await save((await load())..removeWhere(test));
   }
 }
 
 class ProjectStore extends ListStore<Project> {
   ProjectStore()
       : super(
-          key: 'projects',
-          toMap: (p) => p.toMap(),
-          fromMap: Project.fromMap,
-        );
+            key: 'projects',
+            toMap: (p) => p.toMap(),
+            fromMap: Project.fromMap,
+            idOf: (p) => p.id);
 }
 
 class WorkLogStore extends ListStore<WorkLog> {
   WorkLogStore()
       : super(
-          key: 'worklogs',
-          toMap: (w) => w.toMap(),
-          fromMap: WorkLog.fromMap,
-        );
+            key: 'worklogs',
+            toMap: (l) => l.toMap(),
+            fromMap: WorkLog.fromMap,
+            idOf: (l) => l.id);
 }
 
 class WorkoutStore extends ListStore<Workout> {
   WorkoutStore()
       : super(
-          key: 'workouts',
-          toMap: (w) => w.toMap(),
-          fromMap: Workout.fromMap,
-        );
-
-  Future<List<Workout>> toggleDone(Workout workout) async {
-    final updated = [
-      for (final w in await load())
-        if (w.id == workout.id) w.toggledDone() else w,
-    ];
-    await save(updated);
-    return updated;
-  }
+            key: 'workouts',
+            toMap: (w) => w.toMap(),
+            fromMap: Workout.fromMap,
+            idOf: (w) => w.id);
 }
 
 class MediaStore extends ListStore<MediaEntry> {
   MediaStore()
       : super(
-          key: 'media',
-          toMap: (m) => m.toMap(),
-          fromMap: MediaEntry.fromMap,
-        );
+            key: 'media',
+            toMap: (m) => m.toMap(),
+            fromMap: MediaEntry.fromMap,
+            idOf: (m) => m.id);
 }
 
 class LeisureLogStore extends ListStore<LeisureLog> {
   LeisureLogStore()
       : super(
-          key: 'leisurelogs',
-          toMap: (l) => l.toMap(),
-          fromMap: LeisureLog.fromMap,
-        );
+            key: 'leisurelogs',
+            toMap: (l) => l.toMap(),
+            fromMap: LeisureLog.fromMap,
+            idOf: (l) => l.id);
 }
 
 class WeekRange {
-  final DateTime start;
-  final DateTime end;
+  final DateTime start; // Monday 00:00
+  final DateTime end; // Sunday 23:59:59.999
 
   const WeekRange(this.start, this.end);
 
   static WeekRange containing(DateTime day) {
-    final monday = day.subtract(Duration(days: day.weekday - 1));
-    final start = DateTime(monday.year, monday.month, monday.day);
-    final end = start
-        .add(const Duration(days: 7))
+    final start = DateTime(day.year, day.month, day.day - (day.weekday - 1));
+    final end = DateTime(start.year, start.month, start.day + 7)
         .subtract(const Duration(milliseconds: 1));
     return WeekRange(start, end);
   }
 
+  static WeekRange thisWeek() => containing(DateTime.now());
+
   bool contains(DateTime d) => !d.isBefore(start) && !d.isAfter(end);
+}
+
+extension WorkLogTotals on Iterable<WorkLog> {
+  double hoursIn(WeekRange week) =>
+      where((l) => week.contains(l.date)).fold(0.0, (sum, l) => sum + l.hours);
+}
+
+extension LeisureLogTotals on Iterable<LeisureLog> {
+  double hoursIn(WeekRange week) =>
+      where((l) => week.contains(l.date)).fold(0, (sum, l) => sum + l.minutes) /
+      60;
+}
+
+extension WorkoutTotals on Iterable<Workout> {
+  int doneMinutesIn(WeekRange week) =>
+      where((w) => w.done && week.contains(w.date))
+          .fold(0, (sum, w) => sum + w.durationMinutes);
 }

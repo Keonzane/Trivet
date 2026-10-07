@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
 import '../theme.dart';
-import 'confirm_delete.dart';
 
 class DismissibleRow extends StatelessWidget {
   const DismissibleRow({
@@ -24,7 +23,7 @@ class DismissibleRow extends StatelessWidget {
     return Dismissible(
       key: itemKey,
       direction: DismissDirection.endToStart,
-      confirmDismiss: (_) => confirmDelete(
+      confirmDismiss: (_) => _confirmDelete(
         context: context,
         title: title,
         message: confirmMessage,
@@ -45,4 +44,32 @@ class DismissibleRow extends StatelessWidget {
       child: child,
     );
   }
+}
+
+Future<bool> _confirmDelete({
+  required BuildContext context,
+  required String title,
+  required String message,
+}) async {
+  final confirmed = await showDialog<bool>(
+    context: context,
+    builder: (context) => AlertDialog(
+      title: Text('Delete "$title"?'),
+      content: Text(message),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(false),
+          child: const Text('Cancel'),
+        ),
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(true),
+          child: Text(
+            'Delete',
+            style: TextStyle(color: Theme.of(context).colorScheme.error),
+          ),
+        ),
+      ],
+    ),
+  );
+  return confirmed ?? false;
 }

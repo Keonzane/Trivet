@@ -8,12 +8,11 @@ import '../models/workout.dart';
 import '../services/storage_service.dart';
 import '../theme.dart';
 import '../widgets/add_entry_sheet.dart';
-import '../widgets/caption.dart';
 import '../widgets/date_field.dart';
 import '../widgets/media_card.dart';
-import '../widgets/primary_button.dart';
 import '../widgets/project_card.dart';
 import '../widgets/screen_header.dart';
+import '../widgets/section.dart';
 import '../widgets/stat_card.dart';
 import '../widgets/trivet_mark.dart';
 import '../widgets/workout_row.dart';
@@ -75,28 +74,20 @@ class _DashboardScreenState extends State<DashboardScreen> {
     }
 
     final theme = Theme.of(context);
-    final week = WeekRange.containing(DateTime.now());
-
-    final workHours = _workLogs
-        .where((l) => week.contains(l.date))
-        .fold(0.0, (sum, l) => sum + l.hours);
-
-    final weekWorkouts =
-        _workouts.where((w) => week.contains(w.date) && w.done).toList();
-    final healthMinutes =
-        weekWorkouts.fold(0, (sum, w) => sum + w.durationMinutes);
-    final healthHours = healthMinutes / 60;
-
-    final wantIds = _media
-        .where((e) => e.status == MediaStatus.want)
-        .map((e) => e.id)
-        .toSet();
-    final leisureMinutes = _leisureLogs
-        .where((l) => week.contains(l.date) && !wantIds.contains(l.mediaId))
-        .fold(0, (sum, l) => sum + l.minutes);
-    final leisureHours = leisureMinutes / 60;
-
     final now = DateTime.now();
+    final week = WeekRange.containing(now);
+
+    final wantIds = {
+      for (final e in _media)
+        if (e.status == MediaStatus.want) e.id,
+    };
+    final hours = {
+      Pillar.work: _workLogs.hoursIn(week),
+      Pillar.health: _workouts.doneMinutesIn(week) / 60,
+      Pillar.leisure:
+          _leisureLogs.where((l) => !wantIds.contains(l.mediaId)).hoursIn(week),
+    };
+
     final todaysWorkouts =
         _workouts.where((w) => isSameDay(w.date, now)).toList();
     final activeProjects =
@@ -109,11 +100,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
           week.contains(e.completedAt!)),
     ];
 
-    final nudge = _nudgeFor(
-      workHours: workHours,
-      healthHours: healthHours,
-      leisureHours: leisureHours,
-    );
+    final thinnest =
+        hours.entries.reduce((a, b) => b.value < a.value ? b : a).key;
+    final nudge = hours.values.every((h) => h == 0)
+        ? 'Nothing logged yet this week.'
+        : '${thinnest.label} is thin this week.';
 
     return Scaffold(
       body: SafeArea(
@@ -133,23 +124,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   alignment: Alignment.center,
                   children: [
                     TrivetMark(
-                        work: workHours,
-                        health: healthHours,
-                        leisure: leisureHours),
-                    Positioned(
-                      top: 0,
-                      child: _AxisLabel('WORK', Pillar.work),
+                      work: hours[Pillar.work]!,
+                      health: hours[Pillar.health]!,
+                      leisure: hours[Pillar.leisure]!,
                     ),
-                    Positioned(
-                      bottom: 14,
-                      left: 0,
-                      child: _AxisLabel('LEISURE', Pillar.leisure),
-                    ),
-                    Positioned(
-                      bottom: 14,
-                      right: 0,
-                      child: _AxisLabel('HEALTH', Pillar.health),
-                    ),
+                    const Positioned(top: 0, child: _AxisLabel(Pillar.work)),
+                    const Positioned(
+                        bottom: 14, left: 0, child: _AxisLabel(Pillar.leisure)),
+                    const Positioned(
+                        bottom: 14, right: 0, child: _AxisLabel(Pillar.health)),
                   ],
                 ),
               ),
@@ -157,32 +140,17 @@ class _DashboardScreenState extends State<DashboardScreen> {
             const SizedBox(height: AppSpacing.lg),
             Row(
               children: [
-                Expanded(
-                  child: StatCard(
-                    pillar: Pillar.work,
-                    label: 'Hrs worked',
-                    value: workHours.toStringAsFixed(1),
-                    unit: 'h',
+                for (final p in Pillar.values) ...[
+                  if (p != Pillar.work) const SizedBox(width: AppSpacing.sm),
+                  Expanded(
+                    child: StatCard(
+                      pillar: p,
+                      label: p == Pillar.work ? 'Hrs worked' : p.label,
+                      value: hours[p]!.toStringAsFixed(1),
+                      unit: 'h',
+                    ),
                   ),
-                ),
-                const SizedBox(width: AppSpacing.sm),
-                Expanded(
-                  child: StatCard(
-                    pillar: Pillar.health,
-                    label: 'Health',
-                    value: healthHours.toStringAsFixed(1),
-                    unit: 'h',
-                  ),
-                ),
-                const SizedBox(width: AppSpacing.sm),
-                Expanded(
-                  child: StatCard(
-                    pillar: Pillar.leisure,
-                    label: 'Leisure',
-                    value: leisureHours.toStringAsFixed(1),
-                    unit: 'h',
-                  ),
-                ),
+                ],
               ],
             ),
             const SizedBox(height: AppSpacing.md),
@@ -204,56 +172,48 @@ class _DashboardScreenState extends State<DashboardScreen> {
               ),
             ),
             const SizedBox(height: AppSpacing.lg),
-            if (todaysWorkouts.isNotEmpty) ...[
-              const Caption("TODAY'S WORKOUTS"),
-              const SizedBox(height: AppSpacing.sm),
-              for (final w in todaysWorkouts) ...[
-                WorkoutRow(
-                  workout: w,
-                  onToggleDone: () => _toggleWorkout(w),
-                  onTap: () => _editWorkout(w),
-                ),
-                const SizedBox(height: AppSpacing.sm),
-              ],
-              const SizedBox(height: AppSpacing.md),
-            ],
-            if (activeProjects.isNotEmpty) ...[
-              const Caption('ACTIVE WORK'),
-              const SizedBox(height: AppSpacing.sm),
-              for (final p in activeProjects) ...[
-                ProjectCard(
-                  project: p,
-                  hoursThisWeek: _projectHours(p.id, week),
-                  onTap: () => _openProject(p),
-                ),
-                const SizedBox(height: AppSpacing.sm),
-              ],
-              const SizedBox(height: AppSpacing.md),
-            ],
-            if (enjoying.isNotEmpty) ...[
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            if (todaysWorkouts.isNotEmpty)
+              Section(
+                title: "TODAY'S WORKOUTS",
                 children: [
-                  const Caption('CURRENTLY ENJOYING'),
-                  TextButton(
-                    onPressed: widget.onSeeAllLeisure,
-                    child: const Text('SEE ALL'),
-                  ),
+                  for (final w in todaysWorkouts)
+                    WorkoutRow(
+                      workout: w,
+                      onToggleDone: () => _toggleWorkout(w),
+                      onTap: () => _logEntry(workout: w),
+                    ),
                 ],
               ),
-              for (final e in enjoying) ...[
-                MediaCard(
-                  entry: e,
-                  onTap: () => _openMediaDetail(e),
+            if (activeProjects.isNotEmpty)
+              Section(
+                title: 'ACTIVE WORK',
+                children: [
+                  for (final p in activeProjects)
+                    ProjectCard(
+                      project: p,
+                      hoursThisWeek: _workLogs
+                          .where((l) => l.projectId == p.id)
+                          .hoursIn(week),
+                      onTap: () => _open(ProjectDetailScreen(project: p)),
+                    ),
+                ],
+              ),
+            if (enjoying.isNotEmpty)
+              Section(
+                title: 'CURRENTLY ENJOYING',
+                trailing: TextButton(
+                  onPressed: widget.onSeeAllLeisure,
+                  child: const Text('SEE ALL'),
                 ),
-                const SizedBox(height: AppSpacing.sm),
-              ],
-              const SizedBox(height: AppSpacing.sm),
-            ],
-            PrimaryButton(
-              label: '+ Log entry',
-              onPressed: _openAddEntry,
-            ),
+                children: [
+                  for (final e in enjoying)
+                    MediaCard(
+                        entry: e,
+                        onTap: () => _open(MediaDetailScreen(entry: e))),
+                ],
+              ),
+            FilledButton(
+                onPressed: _logEntry, child: const Text('+ Log entry')),
             const SizedBox(height: AppSpacing.md),
           ],
         ),
@@ -261,31 +221,21 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  double _projectHours(String projectId, WeekRange week) => _workLogs
-      .where((l) => l.projectId == projectId && week.contains(l.date))
-      .fold(0.0, (sum, l) => sum + l.hours);
-
   Future<void> _toggleWorkout(Workout w) async {
-    final workouts = await _workoutStore.toggleDone(w);
-    if (mounted) setState(() => _workouts = workouts);
+    await _workoutStore.put(w.toggledDone());
+    await _load();
   }
 
-  Future<void> _editWorkout(Workout w) async {
+  Future<void> _open(Widget screen) async {
+    await Navigator.of(context).push(MaterialPageRoute(builder: (_) => screen));
+    await _load();
+  }
+
+  Future<void> _logEntry({Workout? workout}) async {
     await showAddEntrySheet(
-        context: context, initialPillar: Pillar.health, initialWorkout: w);
-    await _load();
-  }
-
-  Future<void> _openProject(Project p) async {
-    await Navigator.of(context).push(
-      MaterialPageRoute(builder: (context) => ProjectDetailScreen(project: p)),
-    );
-    await _load();
-  }
-
-  Future<void> _openMediaDetail(MediaEntry entry) async {
-    await Navigator.of(context).push(
-      MaterialPageRoute(builder: (context) => MediaDetailScreen(entry: entry)),
+      context: context,
+      initialPillar: workout == null ? null : Pillar.health,
+      initialWorkout: workout,
     );
     await _load();
   }
@@ -297,41 +247,17 @@ class _DashboardScreenState extends State<DashboardScreen> {
             '${weekdayNames[end.weekday - 1]} ${end.day} ${monthNames[end.month - 1]}'
         .toUpperCase();
   }
-
-  String _nudgeFor({
-    required double workHours,
-    required double healthHours,
-    required double leisureHours,
-  }) {
-    if (workHours == 0 && healthHours == 0 && leisureHours == 0) {
-      return 'Nothing logged yet this week.';
-    }
-    final hours = {
-      'Work': workHours,
-      'Health': healthHours,
-      'Leisure': leisureHours,
-    };
-    final thinnest =
-        hours.entries.reduce((a, b) => b.value < a.value ? b : a).key;
-    return '$thinnest is thin this week.';
-  }
-
-  Future<void> _openAddEntry() async {
-    await showAddEntrySheet(context: context);
-    await _load();
-  }
 }
 
 class _AxisLabel extends StatelessWidget {
-  const _AxisLabel(this.text, this.pillar);
+  const _AxisLabel(this.pillar);
 
-  final String text;
   final Pillar pillar;
 
   @override
   Widget build(BuildContext context) {
     return Text(
-      text,
+      pillar.label.toUpperCase(),
       style: Theme.of(context)
           .textTheme
           .labelSmall

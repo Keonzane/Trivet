@@ -1,11 +1,21 @@
 enum WorkoutType { push, pull, legs, cardio }
 
+extension WorkoutTypeLabel on WorkoutType {
+  String get label => switch (this) {
+        WorkoutType.push => 'Push',
+        WorkoutType.pull => 'Pull',
+        WorkoutType.legs => 'Legs',
+        WorkoutType.cardio => 'Cardio',
+      };
+}
+
 class Workout {
   final String id;
   final WorkoutType type;
   final int durationMinutes;
   final DateTime date;
   final String notes;
+
   final bool done;
   final DateTime? completedAt;
 
@@ -29,18 +39,12 @@ class Workout {
         completedAt: done ? null : DateTime.now(),
       );
 
-  String get label {
-    switch (type) {
-      case WorkoutType.push:
-        return 'Push day';
-      case WorkoutType.pull:
-        return 'Pull day';
-      case WorkoutType.legs:
-        return 'Leg day';
-      case WorkoutType.cardio:
-        return 'Cardio day';
-    }
-  }
+  String get label => switch (type) {
+        WorkoutType.push => 'Push day',
+        WorkoutType.pull => 'Pull day',
+        WorkoutType.legs => 'Leg day',
+        WorkoutType.cardio => 'Cardio day',
+      };
 
   Map<String, dynamic> toMap() => {
         'id': id,

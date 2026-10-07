@@ -76,9 +76,6 @@ class MediaEntry {
           : copyWith(durationMinutes: minutes);
 
   MediaEntry copyWith({
-    String? id,
-    String? title,
-    MediaType? type,
     MediaStatus? status,
     int? rating,
     int? durationMinutes,
@@ -93,11 +90,12 @@ class MediaEntry {
     String? notes,
     String? review,
   }) {
+    final newStatus = status ?? this.status;
     return MediaEntry(
-      id: id ?? this.id,
-      title: title ?? this.title,
-      type: type ?? this.type,
-      status: status ?? this.status,
+      id: id,
+      title: title,
+      type: type,
+      status: newStatus,
       rating: rating ?? this.rating,
       durationMinutes: durationMinutes ?? this.durationMinutes,
       totalPages: totalPages ?? this.totalPages,
@@ -110,33 +108,13 @@ class MediaEntry {
       currentEpisode: currentEpisode ?? this.currentEpisode,
       notes: notes ?? this.notes,
       review: review ?? this.review,
-      completedAt: completedAt,
+      completedAt: newStatus != MediaStatus.done
+          ? null
+          : this.status == MediaStatus.done
+              ? completedAt
+              : DateTime.now(),
     );
   }
-
-  MediaEntry withStatus(MediaStatus newStatus) => MediaEntry(
-        id: id,
-        title: title,
-        type: type,
-        status: newStatus,
-        rating: rating,
-        durationMinutes: durationMinutes,
-        totalPages: totalPages,
-        currentPage: currentPage,
-        totalMinutes: totalMinutes,
-        stoppedMinutes: stoppedMinutes,
-        totalSeasons: totalSeasons,
-        currentSeason: currentSeason,
-        totalEpisodes: totalEpisodes,
-        currentEpisode: currentEpisode,
-        notes: notes,
-        review: review,
-        completedAt: newStatus != MediaStatus.done
-            ? null
-            : status == MediaStatus.done
-                ? completedAt
-                : DateTime.now(),
-      );
 
   Map<String, dynamic> toMap() => {
         'id': id,

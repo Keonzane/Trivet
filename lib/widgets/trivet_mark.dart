@@ -75,11 +75,7 @@ class _TrivetMarkPainter extends CustomPainter {
 
     final referenceTriangle = Path()
       ..addPolygon(
-        [
-          vertex(_workAngle, 1),
-          vertex(_healthAngle, 1),
-          vertex(_leisureAngle, 1)
-        ],
+        [vertex(_workAngle, 1), vertex(_healthAngle, 1), vertex(_leisureAngle, 1)],
         true,
       );
     canvas.drawPath(
@@ -98,15 +94,13 @@ class _TrivetMarkPainter extends CustomPainter {
     }
 
     final maxValue = [work, health, leisure].reduce((a, b) => a > b ? a : b);
-    double fractionOf(double v) =>
-        maxValue <= 0 ? 0 : (v / maxValue).clamp(0.0, 1.0);
+    double fractionOf(double v) => maxValue <= 0 ? 0 : (v / maxValue).clamp(0.0, 1.0);
 
     final workPoint = vertex(_workAngle, fractionOf(work));
     final healthPoint = vertex(_healthAngle, fractionOf(health));
     final leisurePoint = vertex(_leisureAngle, fractionOf(leisure));
 
-    final dataTriangle = Path()
-      ..addPolygon([workPoint, healthPoint, leisurePoint], true);
+    final dataTriangle = Path()..addPolygon([workPoint, healthPoint, leisurePoint], true);
     canvas.drawPath(dataTriangle, Paint()..color = line);
     canvas.drawPath(
       dataTriangle,

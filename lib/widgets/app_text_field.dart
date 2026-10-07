@@ -8,6 +8,7 @@ class AppTextField extends StatelessWidget {
     this.maxLines = 1,
     this.errorText,
     this.onTap,
+    this.onChanged,
     this.suffixIcon,
   });
 
@@ -16,6 +17,7 @@ class AppTextField extends StatelessWidget {
   final int maxLines;
   final String? errorText;
   final VoidCallback? onTap;
+  final ValueChanged<String>? onChanged;
   final Widget? suffixIcon;
 
   @override
@@ -25,6 +27,7 @@ class AppTextField extends StatelessWidget {
       maxLines: maxLines,
       readOnly: onTap != null,
       onTap: onTap,
+      onChanged: onChanged,
       decoration: InputDecoration(
         hintText: hint,
         errorText: errorText,

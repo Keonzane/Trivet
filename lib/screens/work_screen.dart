@@ -4,12 +4,12 @@ import '../models/project.dart';
 import '../models/work_log.dart';
 import '../services/storage_service.dart';
 import '../theme.dart';
-import '../widgets/screen_header.dart';
 import '../widgets/add_entry_sheet.dart';
 import '../widgets/dismissible_row.dart';
 import '../widgets/empty_state.dart';
 import '../widgets/pillar_button.dart';
 import '../widgets/project_card.dart';
+import '../widgets/screen_header.dart';
 import '../widgets/sectioned_list.dart';
 import 'project_detail_screen.dart';
 
@@ -45,13 +45,6 @@ class _WorkScreenState extends State<WorkScreen> {
     });
   }
 
-  double _hoursThisWeek(String projectId) {
-    final week = WeekRange.containing(DateTime.now());
-    return _logs
-        .where((l) => l.projectId == projectId && week.contains(l.date))
-        .fold(0.0, (sum, l) => sum + l.hours);
-  }
-
   Future<void> _addProject() async {
     await showAddEntrySheet(context: context, initialPillar: Pillar.work);
     await _load();
@@ -66,11 +59,11 @@ class _WorkScreenState extends State<WorkScreen> {
 
   Future<void> _deleteProject(Project p) async {
     setState(() {
-      _projects = _projects.where((x) => x.id != p.id).toList();
-      _logs = _logs.where((l) => l.projectId != p.id).toList();
+      _projects.removeWhere((x) => x.id == p.id);
+      _logs.removeWhere((l) => l.projectId == p.id);
     });
-    await _projectStore.save(_projects);
-    await _workLogStore.save(_logs);
+    await _projectStore.removeWhere((x) => x.id == p.id);
+    await _workLogStore.removeWhere((l) => l.projectId == p.id);
   }
 
   @override
@@ -81,8 +74,8 @@ class _WorkScreenState extends State<WorkScreen> {
 
     final activeCount =
         _projects.where((p) => p.status == ProjectStatus.active).length;
-    final weekTotal =
-        _projects.fold<double>(0, (sum, p) => sum + _hoursThisWeek(p.id));
+    final week = WeekRange.thisWeek();
+    final weekTotal = _logs.hoursIn(week);
 
     return Scaffold(
       body: SafeArea(
@@ -120,7 +113,9 @@ class _WorkScreenState extends State<WorkScreen> {
                               onDelete: () => _deleteProject(p),
                               child: ProjectCard(
                                 project: p,
-                                hoursThisWeek: _hoursThisWeek(p.id),
+                                hoursThisWeek: _logs
+                                    .where((l) => l.projectId == p.id)
+                                    .hoursIn(week),
                                 onTap: () => _openDetail(p),
                               ),
                             ),

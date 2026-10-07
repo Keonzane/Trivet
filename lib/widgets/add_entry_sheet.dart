@@ -7,6 +7,7 @@ import '../models/workout.dart';
 import '../services/storage_service.dart';
 import '../theme.dart';
 import 'app_text_field.dart';
+import 'choice_bar.dart';
 import 'date_field.dart';
 import 'duration_stepper.dart';
 import 'entry_modal.dart';
@@ -44,37 +45,23 @@ class _AddEntrySheet extends StatefulWidget {
 }
 
 class _AddEntrySheetState extends State<_AddEntrySheet> {
-  Pillar? _pillar;
+  late Pillar? _pillar = widget.initialPillar;
 
   int _workMinutes = 60;
   DateTime? _workDueDate;
   bool _workTitleError = false;
-  late final TextEditingController _workNewTitleController;
+  final _workNewTitleController = TextEditingController();
 
-  late WorkoutType _healthType;
-  late int _healthMinutes;
-  late DateTime _healthDate;
-  late final TextEditingController _healthNotesController;
+  late WorkoutType _healthType =
+      widget.initialWorkout?.type ?? WorkoutType.push;
+  late int _healthMinutes = widget.initialWorkout?.durationMinutes ?? 45;
+  late DateTime _healthDate = widget.initialWorkout?.date ?? DateTime.now();
+  late final _healthNotesController =
+      TextEditingController(text: widget.initialWorkout?.notes ?? '');
 
   MediaType _leisureType = MediaType.book;
   bool _leisureTitleError = false;
-  late final TextEditingController _leisureNewTitleController;
-
-  @override
-  void initState() {
-    super.initState();
-    _pillar = widget.initialPillar;
-
-    _workNewTitleController = TextEditingController();
-
-    _healthType = widget.initialWorkout?.type ?? WorkoutType.push;
-    _healthMinutes = widget.initialWorkout?.durationMinutes ?? 45;
-    _healthDate = widget.initialWorkout?.date ?? DateTime.now();
-    _healthNotesController =
-        TextEditingController(text: widget.initialWorkout?.notes ?? '');
-
-    _leisureNewTitleController = TextEditingController();
-  }
+  final _leisureNewTitleController = TextEditingController();
 
   @override
   void dispose() {
@@ -84,17 +71,19 @@ class _AddEntrySheetState extends State<_AddEntrySheet> {
     super.dispose();
   }
 
-  String _workoutLabel(WorkoutType t) {
-    switch (t) {
-      case WorkoutType.push:
-        return 'Push';
-      case WorkoutType.pull:
-        return 'Pull';
-      case WorkoutType.legs:
-        return 'Legs';
-      case WorkoutType.cardio:
-        return 'Cardio';
-    }
+  Widget _chips<T>(List<T> values, T selected, String Function(T) labelOf,
+      ValueChanged<T> onPick) {
+    return Wrap(
+      spacing: AppSpacing.sm,
+      children: [
+        for (final v in values)
+          ChoiceChip(
+            label: Text(labelOf(v)),
+            selected: selected == v,
+            onSelected: (_) => setState(() => onPick(v)),
+          ),
+      ],
+    );
   }
 
   String get _sheetTitle {
@@ -129,23 +118,18 @@ class _AddEntrySheetState extends State<_AddEntrySheet> {
             status: ProjectStatus.active,
             dueDate: _workDueDate,
           );
-          final projectStore = ProjectStore();
-          await projectStore.save([...await projectStore.load(), project]);
+          await ProjectStore().put(project);
         }
         if (_workMinutes > 0) {
-          final logStore = WorkLogStore();
-          await logStore.save([
-            ...await logStore.load(),
-            WorkLog(
-              id: id,
-              projectId: project.id,
-              hours: _workMinutes / 60,
-              date: DateTime.now(),
-            ),
-          ]);
+          await WorkLogStore().put(WorkLog(
+            id: id,
+            projectId: project.id,
+            hours: _workMinutes / 60,
+            date: DateTime.now(),
+          ));
         }
       case Pillar.health:
-        final workout = Workout(
+        await WorkoutStore().put(Workout(
           id: widget.initialWorkout?.id ?? id,
           type: _healthType,
           durationMinutes: _healthMinutes,
@@ -153,28 +137,20 @@ class _AddEntrySheetState extends State<_AddEntrySheet> {
           notes: _healthNotesController.text.trim(),
           done: widget.initialWorkout?.done ?? false,
           completedAt: widget.initialWorkout?.completedAt,
-        );
-        final store = WorkoutStore();
-        await store.save([
-          for (final w in await store.load())
-            if (w.id != workout.id) w,
-          workout,
-        ]);
+        ));
       case Pillar.leisure:
         final title = _leisureNewTitleController.text.trim();
         if (title.isEmpty) {
           setState(() => _leisureTitleError = true);
           return;
         }
-        final store = MediaStore();
-        await store.save([
-          ...await store.load(),
+        await MediaStore().put(
           MediaEntry(
               id: id,
               title: title,
               type: _leisureType,
               status: MediaStatus.want),
-        ]);
+        );
     }
     if (mounted) Navigator.of(context).pop();
   }
@@ -231,16 +207,8 @@ class _AddEntrySheetState extends State<_AddEntrySheet> {
         return [
           LabelledField(
             label: 'Type',
-            child: Wrap(
-              spacing: AppSpacing.sm,
-              children: WorkoutType.values.map((t) {
-                return ChoiceChip(
-                  label: Text(_workoutLabel(t)),
-                  selected: _healthType == t,
-                  onSelected: (_) => setState(() => _healthType = t),
-                );
-              }).toList(),
-            ),
+            child: _chips(WorkoutType.values, _healthType, (t) => t.label,
+                (t) => _healthType = t),
           ),
           LabelledField(
             label: 'Duration',
@@ -277,16 +245,8 @@ class _AddEntrySheetState extends State<_AddEntrySheet> {
           ),
           LabelledField(
             label: 'Kind',
-            child: Wrap(
-              spacing: AppSpacing.sm,
-              children: MediaType.values.map((t) {
-                return ChoiceChip(
-                  label: Text(t.label),
-                  selected: _leisureType == t,
-                  onSelected: (_) => setState(() => _leisureType = t),
-                );
-              }).toList(),
-            ),
+            child: _chips(MediaType.values, _leisureType, (t) => t.label,
+                (t) => _leisureType = t),
           ),
         ];
     }
@@ -301,18 +261,11 @@ class _AddEntrySheetState extends State<_AddEntrySheet> {
       onSave: _pillar == null ? null : _save,
       fields: [
         if (widget.initialPillar == null)
-          SegmentedButton<Pillar>(
-            showSelectedIcon: false,
-            expandedInsets: EdgeInsets.zero,
-            emptySelectionAllowed: true,
-            segments: const [
-              ButtonSegment(value: Pillar.work, label: Text('Work')),
-              ButtonSegment(value: Pillar.health, label: Text('Health')),
-              ButtonSegment(value: Pillar.leisure, label: Text('Leisure')),
-            ],
-            selected: _pillar == null ? const {} : {_pillar!},
-            onSelectionChanged: (s) =>
-                setState(() => _pillar = s.isEmpty ? null : s.first),
+          ChoiceBar<Pillar>(
+            values: Pillar.values,
+            selected: _pillar,
+            labelOf: (p) => p.label,
+            onSelected: (p) => setState(() => _pillar = p),
           ),
         ..._fieldsForPillar(),
       ],

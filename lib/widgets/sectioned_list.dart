@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../theme.dart';
+import 'choice_bar.dart';
 
 class SectionedList<S> extends StatefulWidget {
   const SectionedList({
@@ -91,15 +92,11 @@ class _SectionedListState<S> extends State<SectionedList<S>> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        SegmentedButton<S>(
-          showSelectedIcon: false,
-          expandedInsets: EdgeInsets.zero,
-          segments: [
-            for (final s in widget.sections)
-              ButtonSegment(value: s, label: Text(widget.labelOf(s))),
-          ],
-          selected: {_selected},
-          onSelectionChanged: (s) => _jumpTo(s.first),
+        ChoiceBar<S>(
+          values: widget.sections,
+          selected: _selected,
+          labelOf: widget.labelOf,
+          onSelected: _jumpTo,
         ),
         const SizedBox(height: AppSpacing.md),
         Expanded(

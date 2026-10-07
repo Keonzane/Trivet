@@ -3,6 +3,14 @@ import 'package:google_fonts/google_fonts.dart';
 
 enum Pillar { work, health, leisure }
 
+extension PillarLabel on Pillar {
+  String get label => switch (this) {
+        Pillar.work => 'Work',
+        Pillar.health => 'Health',
+        Pillar.leisure => 'Leisure',
+      };
+}
+
 class AppSpacing {
   static const double xs = 4; // inside components only
   static const double sm = 8; // base unit, list gaps

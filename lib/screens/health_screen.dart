@@ -3,13 +3,14 @@ import 'package:flutter/material.dart';
 import '../models/workout.dart';
 import '../services/storage_service.dart';
 import '../theme.dart';
-import '../widgets/caption.dart';
-import '../widgets/screen_header.dart';
 import '../widgets/add_entry_sheet.dart';
+import '../widgets/caption.dart';
 import '../widgets/date_field.dart';
 import '../widgets/dismissible_row.dart';
 import '../widgets/empty_state.dart';
 import '../widgets/pillar_button.dart';
+import '../widgets/screen_header.dart';
+import '../widgets/section.dart';
 import '../widgets/stat_card.dart';
 import '../widgets/weekly_bar_chart.dart';
 import '../widgets/workout_row.dart';
@@ -52,8 +53,8 @@ class _HealthScreenState extends State<HealthScreen> {
   }
 
   Future<void> _toggleDone(Workout w) async {
-    final workouts = await _store.toggleDone(w);
-    if (mounted) setState(() => _workouts = workouts);
+    await _store.put(w.toggledDone());
+    await _load();
   }
 
   Future<void> _openAllWorkouts() async {
@@ -64,10 +65,8 @@ class _HealthScreenState extends State<HealthScreen> {
   }
 
   Future<void> _deleteWorkout(Workout w) async {
-    setState(() {
-      _workouts = _workouts.where((x) => x.id != w.id).toList();
-    });
-    await _store.save(_workouts);
+    setState(() => _workouts.removeWhere((x) => x.id == w.id));
+    await _store.removeWhere((x) => x.id == w.id);
   }
 
   int get _streakDays {
@@ -93,14 +92,12 @@ class _HealthScreenState extends State<HealthScreen> {
       return const Center(child: CircularProgressIndicator());
     }
 
-    final week = WeekRange.containing(DateTime.now());
+    final today = DateTime.now();
+    final week = WeekRange.containing(today);
     final weekWorkouts = _workouts.where((w) => week.contains(w.date)).toList()
       ..sort((a, b) => b.date.compareTo(a.date));
     final doneThisWeek = weekWorkouts.where((w) => w.done).toList();
-    final weekMinutes =
-        doneThisWeek.fold<int>(0, (sum, w) => sum + w.durationMinutes);
-
-    final today = DateTime.now();
+    final weekMinutes = _workouts.doneMinutesIn(week);
     final startOfToday = DateTime(today.year, today.month, today.day);
 
     final todays = weekWorkouts.where((w) => isSameDay(w.date, today)).toList();
@@ -164,48 +161,39 @@ class _HealthScreenState extends State<HealthScreen> {
               ],
             ),
             const SizedBox(height: AppSpacing.lg),
-            if (todays.isNotEmpty) ...[
-              const Caption('TODAY'),
-              const SizedBox(height: AppSpacing.sm),
-              for (final w in todays) ...[
-                rowFor(w),
-                const SizedBox(height: AppSpacing.sm),
-              ],
-              const SizedBox(height: AppSpacing.sm),
-            ],
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            if (todays.isNotEmpty)
+              Section(
+                  title: 'TODAY',
+                  children: [for (final w in todays) rowFor(w)]),
+            Section(
+              title: 'MINUTES PER DAY',
+              trailing: Caption('$weekMinutes TOTAL'),
               children: [
-                const Caption('MINUTES PER DAY'),
-                Caption('$weekMinutes TOTAL'),
+                Card(
+                  child: Padding(
+                    padding: const EdgeInsets.all(AppSpacing.md),
+                    child: WeeklyBarChart(
+                        values: dailyMinutes, pillar: Pillar.health),
+                  ),
+                ),
               ],
             ),
-            const SizedBox(height: AppSpacing.sm),
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(AppSpacing.md),
-                child:
-                    WeeklyBarChart(values: dailyMinutes, pillar: Pillar.health),
+            if (upcoming.isNotEmpty)
+              Section(
+                title: 'UPCOMING',
+                children: [
+                  for (final w in upcoming)
+                    rowFor(w, dayLabel: formatShortDate(w.date)),
+                ],
               ),
-            ),
-            const SizedBox(height: AppSpacing.lg),
-            if (upcoming.isNotEmpty) ...[
-              const Caption('UPCOMING'),
-              const SizedBox(height: AppSpacing.sm),
-              for (final w in upcoming) ...[
-                rowFor(w, dayLabel: formatShortDate(w.date)),
-                const SizedBox(height: AppSpacing.sm),
-              ],
-              const SizedBox(height: AppSpacing.sm),
-            ],
-            if (earlier.isNotEmpty) ...[
-              const Caption('EARLIER THIS WEEK'),
-              const SizedBox(height: AppSpacing.sm),
-              for (final w in earlier) ...[
-                rowFor(w, dayLabel: weekdayNames[w.date.weekday - 1]),
-                const SizedBox(height: AppSpacing.sm),
-              ],
-            ],
+            if (earlier.isNotEmpty)
+              Section(
+                title: 'EARLIER THIS WEEK',
+                children: [
+                  for (final w in earlier)
+                    rowFor(w, dayLabel: weekdayNames[w.date.weekday - 1]),
+                ],
+              ),
             if (weekWorkouts.isEmpty && upcoming.isEmpty)
               EmptyState(
                 message: 'No workouts logged yet. Start with anything.',

@@ -4,12 +4,12 @@ import '../models/leisure_log.dart';
 import '../models/media_entry.dart';
 import '../services/storage_service.dart';
 import '../theme.dart';
-import '../widgets/screen_header.dart';
 import '../widgets/add_entry_sheet.dart';
 import '../widgets/dismissible_row.dart';
 import '../widgets/empty_state.dart';
 import '../widgets/media_card.dart';
 import '../widgets/pillar_button.dart';
+import '../widgets/screen_header.dart';
 import '../widgets/sectioned_list.dart';
 import 'media_detail_screen.dart';
 
@@ -47,14 +47,6 @@ class _LeisureScreenState extends State<LeisureScreen> {
     });
   }
 
-  double _hoursThisWeek(String mediaId) {
-    final week = WeekRange.containing(DateTime.now());
-    final minutes = _logs
-        .where((l) => l.mediaId == mediaId && week.contains(l.date))
-        .fold(0, (sum, l) => sum + l.minutes);
-    return minutes / 60;
-  }
-
   Future<void> _addTitle() async {
     await showAddEntrySheet(context: context, initialPillar: Pillar.leisure);
     await _load();
@@ -62,11 +54,11 @@ class _LeisureScreenState extends State<LeisureScreen> {
 
   Future<void> _deleteTitle(MediaEntry e) async {
     setState(() {
-      _entries = _entries.where((x) => x.id != e.id).toList();
-      _logs = _logs.where((l) => l.mediaId != e.id).toList();
+      _entries.removeWhere((x) => x.id == e.id);
+      _logs.removeWhere((l) => l.mediaId == e.id);
     });
-    await _mediaStore.save(_entries);
-    await _logStore.save(_logs);
+    await _mediaStore.removeWhere((x) => x.id == e.id);
+    await _logStore.removeWhere((l) => l.mediaId == e.id);
   }
 
   Future<void> _openDetail(MediaEntry entry) async {
@@ -82,8 +74,7 @@ class _LeisureScreenState extends State<LeisureScreen> {
       return const Center(child: CircularProgressIndicator());
     }
 
-    final weekTotal =
-        _entries.fold<double>(0, (sum, e) => sum + _hoursThisWeek(e.id));
+    final weekTotal = _logs.hoursIn(WeekRange.thisWeek());
 
     return Scaffold(
       body: SafeArea(
