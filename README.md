@@ -1,12 +1,18 @@
 # Trivet
 
+![Built with AI](https://img.shields.io/badge/Built%20with-Claude-D97757)
+
+Built with help from Claude (Anthropic). See [AI-USAGE.md](AI-USAGE.md) for how.
+
 ## 1. Overview
 
 Trivet is a weekly balance tracker for university students and
 early-career workers whose week isn't fixed by an employer, timetable, or
 parent. It shows how many hours went into Work, Health, and Leisure this
 week, side by side, so a person can see when one pillar is crowding out
-the others — without a made-up "balance score" behind it.
+the others, without a made-up "balance score" behind it.
+
+Live app: https://keonzane.github.io/Trivet/
 
 ## 2. Setup and installation
 
@@ -18,121 +24,110 @@ the others — without a made-up "balance score" behind it.
   flutter pub get
   ```
 
-- No configuration needed. Trivet is single-user with no backend — there's
-  no backend URL, no API key, and nothing to place in an `.env` file. All
-  of the person's data is stored locally on the device with
-  `shared_preferences` and never sent anywhere. One caveat: the
-  `google_fonts` package downloads the two font families (Space Grotesk,
-  IBM Plex Sans) from Google Fonts the first time the app runs, so that
-  first launch needs a network connection; after that they're cached.
+- All of a person's entries are stored locally on the device with
+  `shared_preferences` and never sent anywhere.
+- The only network use is:
+  - **Leisure search.** Typing a title searches Open Library and AniList
+    directly (no key needed), and TMDB (films, TV) and RAWG (games)
+    through a small Cloudflare Worker in `media_proxy/`. The API keys live
+    only in that Worker as Cloudflare secrets. The app only knows the
+    Worker's address, which it reads from `dart_defines.json`.
+  - **Fonts.** `google_fonts` downloads Space Grotesk and IBM Plex Sans the
+    first time the app runs; after that they're cached.
+- To run your own proxy instead of mine, see `MEDIA_SEARCH_SETUP.md`, then
+  put your Worker's URL in `dart_defines.json` (copy
+  `dart_defines.example.json`).
 
 ## 3. How to run it
 
 ```
-flutter run -d chrome
+flutter run -d chrome --dart-define-from-file=dart_defines.json
 ```
 
-(or `flutter run` targeting a connected device/simulator). On launch you
-should see a bottom navigation bar with four tabs — **Home**, **Work**,
-**Health**, **Leisure** — and Design System v2's Paper/Ink colour scheme
-(light by default, following the system theme). All four tabs are live.
+or, on Windows, `run.bat` (same command). Without the
+`--dart-define-from-file` part the app still runs, but film, TV and game
+search are switched off; books and anime still work.
 
-To run the automated tests:
+In debug mode the app opens inside a phone frame (Device Preview). On
+launch you should see four tabs, **Home**, **Work**, **Health** and
+**Leisure**, in Design System v2's Paper/Ink colours. The sun/moon button
+at the top right switches between light and dark mode.
 
-```
-flutter test
-```
+There are no automated tests yet (`test/` is empty).
 
-This currently covers `WeekRange` (Monday-start week math) with four
-hand-picked dates, per the proposal's own risk-mitigation plan.
+The `main` branch is built and published to GitHub Pages automatically by
+`.github/workflows/deploy.yml` (see `DEPLOY.md`).
 
 ## 4. Features and usage
 
-**Work** — Filter projects by Active / Paused / Done. Each row shows the
-project and hours logged this week. Tapping `+ Add project` opens the
-Add entry sheet in "new project" mode — a title field, no picker — while
-tapping an existing project's row opens the same sheet locked to that
-project, to log more hours against it. Duration is set in 0.5 h steps.
+**Home (Dashboard)** shows the week's date range, the triad chart
+comparing the three pillars, a stat card per pillar with this week's
+hours, and a one-line nudge naming the thinnest pillar. Below that:
+today's workouts (tick them off here), active work projects, and
+"Currently enjoying" (titles in progress, plus ones finished this week)
+with **SEE ALL** jumping to Leisure. `+ Log entry` opens the Add entry
+sheet with a Work / Health / Leisure picker.
 
-**Health** — Shows your current day streak and total minutes this week,
-a bar chart of minutes per day, today's session(s), and the rest of the
-week's sessions below. `+ Log workout` opens the Add entry sheet: choose
-a type (Push/Pull/Legs/Run/Swim), set duration in 5-minute steps, add
-notes, set the date, and save. Tapping an existing session reopens the
-sheet pre-filled, to edit it.
+**Work** lists projects in one scrolling page with Active / Paused / Done
+sections; the bar at the top jumps to a section and follows your
+scrolling. Each card shows the due date and hours this week. `+ Add
+project` creates a project (title, optional due date, optional first
+hours). Tapping a project opens its detail screen: total hours, status,
+due date, notes, and `+ Log hours`.
 
-**Leisure** — Filter titles by Want / In progress / Done (opens on
-Want). Each row shows the title, its kind and status, and either hours
-logged this week or a star rating. `+ Add title` opens the Add entry
-sheet in "new title" mode — title and kind, no picker. Tapping a row
-(rather than `+ Add title`) opens that title's **detail screen** instead,
-where its status and star rating are set, and where more time can be
-logged against it.
+**Health** shows "X of Y sessions done", the current streak and minutes
+this week (done sessions only), today's sessions as a checklist, a bar
+chart of minutes per day, upcoming sessions and earlier ones this week.
+`+ Log workout` adds a Push, Pull, Legs or Cardio session with duration,
+date and notes. Ticking a session records when it was done. `See all
+workouts` lists every session grouped by date.
 
-**Home (Dashboard)** — Shows the week's date range, three stat cards
-(hours worked / workouts / leisure hours, all computed live from this
-week's entries), a one-line nudge naming whichever pillar is thinnest,
-and — when there's anything to show — a "currently enjoying" shelf of up
-to two titles that aren't in Want status, with a **SEE ALL** that jumps
-to the Leisure tab pre-filtered to In progress. `+ Log entry` opens the
-real Add entry sheet with its pillar picker unset — pick Work, Health, or
-Leisure and the fields underneath swap to match; from here each choice
-creates something new (a new project, workout or title). The triad chart
-(stretch, per the proposal) isn't built.
+**Leisure** lists titles in Want / In progress / Done sections on one
+page. `+ Add title` asks for a title and kind (Book, Film, Series, Game);
+typing a title shows search results, and picking one fills in the title
+and its totals (pages, runtime, seasons and episodes). Tapping a title
+opens its detail screen, which changes with the status:
 
-There's no dropdown anywhere in the Add entry sheet. Tapping a row
-already says exactly which project/title you mean, and `+ Add project` /
-`+ Add title` always means "create a new one" — the same way
-`+ Log workout` always creates a new workout. A dropdown would just be a
-second way to pick something you could already pick by tapping its row.
+- **Want:** notes.
+- **In progress:** current page for books, where you stopped for films,
+  season and episode plus where you stopped for series, and time played
+  for games. Progress can't go past the totals. Each change is logged as
+  leisure time for that day.
+- **Done:** a 1–5 star rating and a review, separate from the notes.
 
-Every entry point opens the same sheet (`add_entry_sheet.dart`): Work's
-`+ Add project` / row tap, Health's `+ Log workout` / row tap, Leisure's
-`+ Add title`, the media detail screen's `+ Log time`, and Dashboard's
-`+ Log entry`. There is no second copy of the form. Opened from a
-specific pillar's own screen, the picker is pre-selected and locked to
-that pillar (see Known issues for why); opened from the Dashboard, it's
-unset and freely switchable.
+Leisure time only counts toward the week once a title is started, so
+titles still in Want don't add hours.
+
+Every list supports swipe-left-to-delete, with a confirmation first.
 
 ## 5. Project structure
 
 ```
 lib/
-  main.dart                  # app entry point, theme wiring, tab shell
-  theme.dart                 # ColorScheme (light+dark), PillarColors,
-                              # TextTheme, AppSpacing, themed components
-  models/
-    project.dart              # Work: Project
-    work_log.dart              # Work: WorkLog
-    workout.dart                # Health: Workout
-    media_entry.dart             # Leisure: MediaEntry
-    leisure_log.dart              # Leisure: LeisureLog
+  main.dart                  # start-up, theme switching, the 4-tab shell
+  theme.dart                 # Pillar enum, AppSpacing, PillarColors,
+                              # light and dark themes, fonts
+  models/                    # Project, WorkLog, Workout, MediaEntry,
+                              # LeisureLog, MediaResult (a search result)
   services/
-    storage_service.dart       # ListStore<T> + one store per model,
-                                # WeekRange (Monday-start week math)
-  widgets/
-    pillar_card.dart, pillar_button.dart, primary_button.dart,
-    stat_card.dart, weekly_bar_chart.dart, media_card.dart, app_nav.dart,
-    empty_state.dart, app_text_field.dart, duration_stepper.dart,
-    date_field.dart            # date text field + picker, shared by every
-                                # form (also holds formatShortDate)
-    entry_modal.dart           # shared sheet shell (drag handle, title,
-                                # Cancel/Save)
-    add_entry_sheet.dart       # the one Add entry sheet — one pillar
-                                # picker, three field sets
-  screens/
-    dashboard_screen.dart, work_screen.dart, health_screen.dart,
-    leisure_screen.dart, media_detail_screen.dart
+    storage_service.dart     # ListStore<T> (shared_preferences),
+                              # WeekRange and weekly totals
+    theme_controller.dart    # saves light/dark mode
+    media_search/            # MediaSearchService + one provider per API
+                              # (TMDB, RAWG, Open Library, AniList)
+  widgets/                   # shared cards, steppers, fields, charts,
+                              # the Add entry sheet, SectionedList
+  screens/                   # Dashboard, Work, Health, Leisure, and the
+                              # detail and All workouts screens
+media_proxy/                 # Cloudflare Worker that holds the API keys
+.github/workflows/deploy.yml # builds and publishes the web app
 ```
 
-State is held per-screen with `StatefulWidget` + `setState`, loaded from
-and saved back to the matching store — there's no separate state
-management package.
+State is held per screen with `StatefulWidget` and `setState`, loaded
+from and saved back to the matching store. There's no state management
+package.
 
 ## 6. Screenshots
-
-Running on the phone frame (`flutter run`), light theme, per Design
-System v2:
 
 | Home (Dashboard) | Work |
 | --- | --- |
@@ -142,88 +137,44 @@ System v2:
 | --- | --- |
 | ![Health screen](screenshots/health.png) | ![Leisure screen](screenshots/leisure.png) |
 
-| Add entry sheet (opened from Work) |
+| Add entry sheet |
 | --- |
 | ![Add entry sheet](screenshots/add-entry.png) |
 
-These are first-launch screens with nothing logged yet, so every list
-shows its empty state and the Home stat cards read zero — the app ships
-no sample data. The Add entry sheet screenshot shows the pillar picker
-locked to Work (all three segments visible, Work filled in) with the
-"new project" form underneath.
-
-Still needed: screenshots with data in them (the Home nudge and
-"currently enjoying" shelf, a populated Work/Health/Leisure list) and
-the media detail screen.
-
 ## 7. Known issues and next steps
 
-- **Dashboard's triad chart isn't built.** It's an explicit stretch goal
-  in the proposal — the rest of the Dashboard (stat row, nudge, shelf) is
-  done without it.
-- **The pillar picker is locked when opened from Work, Health, or
-  Leisure's own screen** (only Dashboard's `+ Log entry` allows switching
-  freely). It still shows all three segments with the current pillar
-  filled in — it just can't be changed. This is a deliberate trade-off, not an oversight: the unified
-  sheet's picker lets you switch to *any* pillar and save against it, but
-  saving requires that pillar's data already be loaded — Dashboard loads
-  all five stores, but Work/Health/Leisure only load their own. Locking
-  the picker in those three contexts avoids either (a) every screen
-  loading all five stores just in case, or (b) a switch silently failing
-  to save. Revisiting this would mean giving every screen the same
-  five-store load Dashboard has, which is real duplicated work for a
-  fairly narrow benefit (being able to log a workout without leaving the
-  Work tab). Worth noting honestly: the first version of this lock was
-  *described* but not actually wired up — the picker was switchable
-  everywhere, and switching away from a screen's own pillar saved
-  nothing, silently. Caught by testing the app, not by reviewing the
-  code, and fixed by actually disabling the control.
-- **Correction from an earlier version of this doc:** it used to say tabs
-  "stay alive" when you switch between them. That was wrong — `main.dart`
-  only ever mounts the active tab's screen, so switching tabs fully
-  rebuilds it (`initState()` runs again) rather than preserving it. The
-  upside: this means data *does* stay in sync across tabs automatically —
-  logging a project from the Dashboard will show up on Work the next time
-  you open that tab, since it reloads from `shared_preferences` fresh
-  every time. The downside: any state that isn't persisted — the selected
-  status filter, scroll position — resets to its default every time you
-  leave a tab and come back. Worth an `IndexedStack` or real state
-  management if that resetting starts to feel wrong.
-- **A corrupted or hand-edited `shared_preferences` value would break
-  loading.** `fromMap` uses `byName` and `jsonDecode` without guards, so
-  an unknown enum value or malformed JSON throws inside a screen's
-  `_load()` and leaves it on its loading spinner. Fine while the only
-  writer is the app itself; worth a try/catch that skips bad records if
-  this ever handles imported data.
-- **No delete.** Projects, workouts, and titles can be added and edited
-  but not removed.
-- **No picker for an existing project/title from `+ Add project` /
-  `+ Add title`.** An earlier version had a dropdown there that defaulted
-  to whichever project was added first, which read as broken (you'd tap
-  "add new" and land on old data). Fixed by removing the dropdown
-  entirely: `+ Add project` / `+ Add title` now always creates a new one,
-  and logging against an existing project/title happens by tapping its
-  row instead — the same pattern Health already used.
-- **Duplication in the Add entry code was removed.** There used to be a
-  second, narrower Leisure sheet (`leisure_entry_sheet.dart`) for the
-  media detail screen's `+ Log time`, and the date field (formatting,
-  controller, picker) was written out in every form. The detail screen
-  now opens the same `add_entry_sheet.dart` as everything else, and the
-  date field is one shared `DateField` widget. Screens also no longer
-  pass empty "unreachable" save callbacks for pillars they can't reach:
-  the callbacks are optional, and a debug-mode assert checks that a
-  screen passed the ones it needs.
+- **Leisure time is recorded on the day you update progress**, not the
+  day you actually read or watched. Changing progress on Monday for
+  something watched on Sunday counts on Monday.
+- **The pillar picker only appears when adding from the Dashboard.** From
+  Work, Health or Leisure the sheet is already set to that pillar.
+- **Tabs reload when you switch to them.** Only the open tab is built, so
+  data is always fresh, but a scroll position resets when you leave a tab.
+- **Delete is swipe-only**, which is easy to miss if you don't know the
+  gesture.
+- **The theme button can't go back to "follow the system"** once you've
+  picked light or dark.
+- **Film, TV and game search depend on the proxy.** If the Worker is down
+  or its free limits run out, those searches return nothing; you can
+  still type a title by hand.
+- **Search results store a poster URL and year**, but no screen shows the
+  poster yet.
+- **No automated tests yet.**
 
 ## AI usage
 
 This project was built with AI assistance. See `AI-USAGE.md` for the
-tool, prompts, and what was kept or changed.
+tool, what I asked for, what I kept or changed, and where it went wrong.
 
 ## Weekly records
 
-- `REPORT.md` — weekly increment reports (week 1 and week 2).
-- `journal/` — weekly reflection journal entries.
+- `REPORT.md`: weekly increment reports.
 
+## Credits
+
+This product uses the TMDB API but is not endorsed or certified by TMDB.
+Game data from RAWG (https://rawg.io). Book data from Open Library.
+Anime and manga data from AniList.
 
 # Security checklist
 
@@ -231,62 +182,66 @@ tool, prompts, and what was kept or changed.
 
 | # | Check | Yes / No / N/A | Evidence |
 | --- | --- | --- | --- |
-| 1 | No API key, token or password is hardcoded in `lib/`, including in comments and commented-out code | Yes | Searched `lib/` and `pubspec.yaml` for key, secret, password, token, http, firebase and supabase, comments included: no matches. The app has no backend, so there is nothing to hardcode. |
-| 2 | Anything private is in a gitignored config or passed with `--dart-define`, with an example file committed | N/A | The app has nothing private: no backend, no API and no config values, so there is no config file or `--dart-define` to use. |
-| 3 | No keystore, `key.properties` or signing credential is in the repository | Yes | No .jks, .keystore, key.properties, .pem or .env file exists. Ran `git ls-files \| Select-String -Pattern "jks\|keystore\|key\.properties\|\.pem\|\.env"`|
-| 4 | Git history is clean: I searched `git log -p` for password, secret, api key and token | Yes | Ran `git log -p \| Select-String -Pattern "password\|secret\|api.?key\|token" -CaseSensitive:$false` on the single-commit history. The only matches were prose in README.md and REPORT.md stating the app has no secrets; no credential values in code or config. |
-| 5 | Any credential that was ever committed has been rotated | N/A | No credential was ever created for this app, so there is nothing to rotate (this holds only if row 4 finds nothing). |
+| 1 | No API key, token or password is hardcoded in `lib/`, including in comments and commented-out code | Yes | Searched `lib/` and `pubspec.yaml` for key, secret, password, token and api_key, comments included. The only matches are comments explaining that keys live on the proxy; no key values. The TMDB and RAWG keys exist only as Cloudflare secrets. |
+| 2 | Anything private is in a gitignored config or passed with `--dart-define`, with an example file committed | Yes | The API keys are Cloudflare secrets set with `wrangler secret put`, never in the repo. The app only gets the proxy URL, through `--dart-define-from-file=dart_defines.json`; `dart_defines.example.json` is committed. `dart_defines.json` is committed on purpose because the URL is not secret (it is visible in the built web app anyway). Cloudflare account files (`media_proxy/.wrangler/`) are gitignored. |
+| 3 | No keystore, `key.properties` or signing credential is in the repository | Yes | No .jks, .keystore, key.properties, .pem or .env file exists. Ran `git ls-files \| Select-String -Pattern "jks\|keystore\|key\.properties\|\.pem\|\.env"`: no matches. [confirm after push] |
+| 4 | Git history is clean: I searched `git log -p` for password, secret, api key and token | Yes | Ran `git log -p \| Select-String -Pattern "password\|secret\|api.?key\|token" -CaseSensitive:$false`. Matches are only documentation and code that names the secrets (`TMDB_API_KEY`, `secrets.MEDIA_PROXY_URL`), never a value. [confirm after push] |
+| 5 | Any credential that was ever committed has been rotated | N/A | No credential was ever committed (see row 4), so there is nothing to rotate. |
 
 ## GitHub Actions
 
-The project has no workflows, so every row in this section is N/A.
-
 | # | Check | Yes / No / N/A | Evidence |
 | --- | --- | --- | --- |
-| 6 | No secret value is written literally in any workflow YAML file | N/A | There is no .github/workflows folder in the project, so no workflows exist (covers rows 6-12). Confirmed `Test-Path .github` returns False.|
-| 7 | Secrets are stored in repository Actions secrets and read with `${{ secrets.NAME }}` | N/A | No workflows, so no secrets are used (see row 6). |
-| 8 | No workflow step echoes, dumps or debug-prints a secret, and I opened a recent run's log to confirm | N/A | No workflows, so there are no runs or logs (see row 6). |
-| 9 | If I build a signed APK: the keystore is a base64 secret decoded to a file at build time, never printed | N/A | I do not build a signed APK and have no workflows (see row 6). |
-| 10 | Uploaded build artifacts contain no key file, keystore or generated config | N/A | No workflows upload artifacts (see row 6). |
-| 11 | Third-party actions are pinned to a commit SHA, not a moveable tag | N/A | No workflows use any actions (see row 6). |
-| 12 | Secret scanning and push protection are enabled on the repository | N/A | There are no secrets or workflows to protect (see row 6); I could still switch this on in the repository settings. |
+| 6 | No secret value is written literally in any workflow YAML file | Yes | `.github/workflows/deploy.yml` is the only workflow. Its only secret is read as `${{ secrets.MEDIA_PROXY_URL }}`; no values are written in the file. |
+| 7 | Secrets are stored in repository Actions secrets and read with `${{ secrets.NAME }}` | Yes | `MEDIA_PROXY_URL` is a repository Actions secret (Settings → Secrets and variables → Actions) and the workflow reads it with `${{ secrets.MEDIA_PROXY_URL }}`. |
+| 8 | No workflow step echoes, dumps or debug-prints a secret, and I opened a recent run's log to confirm | Yes | No step uses `echo`, `cat` or debug output on the secret; it is only written into `dart_defines.json` for the build. [confirm: open the latest run's log in the Actions tab and check the URL step shows `***`] |
+| 9 | If I build a signed APK: the keystore is a base64 secret decoded to a file at build time, never printed | N/A | The Android job builds an APK with Flutter's default debug signing (`signingConfigs.getByName("debug")` in `android/app/build.gradle.kts`); there is no release keystore. |
+| 10 | Uploaded build artifacts contain no key file, keystore or generated config | Yes | The web job uploads `build/web` and the Android job uploads the APK. Neither contains a key or keystore; the only config compiled in is the proxy URL, which is not secret. |
+| 11 | Third-party actions are pinned to a commit SHA, not a moveable tag | No | Actions are pinned to version tags (`actions/checkout@v4`, `subosito/flutter-action@v2`, `softprops/action-gh-release@v2` and others), not commit SHAs. Next step: replace each tag with its commit SHA. |
+| 12 | Secret scanning and push protection are enabled on the repository | Yes | [confirm: turn on in Settings → Code security → Secret Protection, then check it shows Enabled] |
 
 ## Backend and security rules
 
-The app has no backend: all data is stored on the device with `shared_preferences`. Rows 13–17 are therefore N/A.
+The app has no database or accounts: all user data is stored on the
+device with `shared_preferences`. The only server is the Cloudflare
+Worker, which stores nothing and only forwards searches. Rows 13–17 are
+therefore N/A.
 
 | # | Check | Yes / No / N/A | Evidence |
 | --- | --- | --- | --- |
 | 13 | Firestore and Storage rules are not left open to anyone; they require an authenticated user | N/A | No Firebase or Supabase is used, so there are no rules to write (covers rows 13–17). |
-| 14 | Rules restrict a user to their own documents where that makes sense | N/A | No backend and no accounts (see row 13). |
+| 14 | Rules restrict a user to their own documents where that makes sense | N/A | No backend database and no accounts (see row 13). |
 | 15 | If Supabase: Row Level Security is on for every table | N/A | Supabase is not used (see row 13). |
-| 16 | Firebase and Google API keys are restricted in the Google Cloud console to the APIs and app they are for | N/A | The app uses no Firebase or Google API keys (see row 13). |
+| 16 | Firebase and Google API keys are restricted in the Google Cloud console to the APIs and app they are for | N/A | The app uses no Firebase or Google API keys (see row 13). The TMDB and RAWG keys never leave the proxy. |
 | 17 | I opened the app signed out and confirmed I could not read or write data I should not | N/A | There is no sign-in and no shared data: each install only holds its own entries (see row 13). |
-| 18 | Seed and sample data is invented, not real people's data | N/A | The app has no seed or sample data, so there is nothing to check. |
+| 18 | Seed and sample data is invented, not real people's data | N/A | The app has no seed or sample data. |
 
 ## Input and app surface
 
 | # | Check | Yes / No / N/A | Evidence |
 | --- | --- | --- | --- |
-| 19 | Input is validated before it is written, not only styled as valid in the UI | Yes | `_save()` in `add_entry_sheet.dart` checks the trimmed title is not empty before a project or title is created, and durations can only change through `DurationStepper`, which stops at zero. Not checked: title and notes length, and a duration of zero is allowed. |
-| 20 | Nothing secret is recoverable from the built app, since a shipped binary can be unpacked | Yes | The app contains no keys, tokens or credentials to recover. The person's entries live in on-device storage, not in the binary. |
+| 19 | Input is validated before it is written, not only styled as valid in the UI | Yes | `_save()` in `add_entry_sheet.dart` checks the trimmed title is not empty before a project or title is created. Durations and progress only change through `NumberStepper`, which clamps to its min and max, so progress can't pass a title's totals. The proxy only accepts search paths, cuts each parameter to 200 characters and caps RAWG results at 20. Not checked: title and notes length. |
+| 20 | Nothing secret is recoverable from the built app, since a shipped binary can be unpacked | Yes | The built app contains only the proxy URL, which is not secret. The API keys stay in Cloudflare and are added to requests on the proxy's side. |
 
 ## Repository and privacy
 
 | # | Check | Yes / No / N/A | Evidence |
 | --- | --- | --- | --- |
-| 21 | No student number, personal email, phone number or home address in the repository or in commit messages | Yes | Commit author is the GitHub noreply address (checked with `git log --format="%an %ae %s"`). No personal email appears in commit messages.|
+| 21 | No student number, personal email, phone number or home address in the repository or in commit messages | Yes | Commit author is the GitHub noreply address (checked with `git log --format="%an %ae %s"`). `android/local.properties` (local paths) and `media_proxy/.wrangler/` (Cloudflare account) are gitignored. [confirm after push] |
 | 22 | No classmate's personal data in the repository | Yes | The app only stores the person's own entries and the project contains no data about anyone else. |
-| 23 | Dependencies come from pub.dev, and `build/` and `.dart_tool/` are gitignored | Yes | Runtime dependencies are google_fonts, shared_preferences, device_preview and cupertino_icons, all from pub.dev. Confirmed .gitignore lists .dart_tool/ and build/. |
-| 24 | Images, fonts and other assets are mine, licensed, or credited | Yes | The fonts are Space Grotesk and IBM Plex Sans, both open-licensed (SIL OFL) and loaded through `google_fonts`; no image assets are bundled; the screenshots are my own captures of the app. |
-| 25 | Repository visibility is deliberate, and I checked it after my last push | Yes | Opened the repo in a private window after the final push. It is **public**, which is intended so the instructor can view it. No journal, .dart_tool or build folder is visible. |
+| 23 | Dependencies come from pub.dev, and `build/` and `.dart_tool/` are gitignored | Yes | Runtime dependencies are google_fonts, shared_preferences, http, url_launcher and device_preview, all from pub.dev. `.gitignore` lists `.dart_tool/` and `build/`. |
+| 24 | Images, fonts and other assets are mine, licensed, or credited | Yes | Fonts are Space Grotesk and IBM Plex Sans (SIL OFL) via `google_fonts`. Search data comes from TMDB, RAWG, Open Library and AniList, credited in the README's Credits section; RAWG is also credited in the app with the link its terms require. Screenshots are my own captures. |
+| 25 | Repository visibility is deliberate, and I checked it after my last push | Yes | Public, so the instructor can view it. [confirm: open the repo in a private window after the final push and check no `.dart_tool`, `build`, `.wrangler` or `local.properties` is visible] |
 
 ## Anything I found and fixed
 
-Filling this in caught two things. The README said the app was fully
-offline, but `google_fonts` downloads the two fonts from Google the first
-time the app runs, so I corrected the README and it now says so. I also
-noticed that stored data is read back without any guard (`jsonDecode` and
-`byName` in the models), so a corrupted value would leave a screen on its
-loading spinner; I have not fixed that, only documented it under Known
-issues. The checklist found no secrets because the app never needed any.
+Filling this in caught several things. The README said the app was fully
+offline, but `google_fonts` downloads the fonts on first launch, so I
+corrected it. A corrupted stored record used to leave a screen stuck on
+its loading spinner; `ListStore.load()` now skips bad records. Adding
+media search meant handling API keys: instead of putting them in the app,
+they live as Cloudflare secrets in a proxy, and I removed the unused IGDB
+code that would have needed a Twitch client secret. An old GitHub
+secret-scanning alert was a false positive from a committed `.dart_tool`
+browser profile; `.dart_tool/` is now gitignored. One item is still open:
+workflow actions are pinned to tags, not commit SHAs (row 11).

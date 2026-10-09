@@ -1,9 +1,15 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../models/media_entry.dart';
+import '../models/media_result.dart';
 import '../models/project.dart';
 import '../models/work_log.dart';
 import '../models/workout.dart';
+import '../services/media_search/media_search_service.dart';
+import '../services/media_search/rawg_provider.dart';
 import '../services/storage_service.dart';
 import '../theme.dart';
 import 'app_text_field.dart';
@@ -62,9 +68,16 @@ class _AddEntrySheetState extends State<_AddEntrySheet> {
   MediaType _leisureType = MediaType.book;
   bool _leisureTitleError = false;
   final _leisureNewTitleController = TextEditingController();
+  final _search = MediaSearchService.instance;
+  Timer? _searchDebounce;
+  int _searchSeq = 0;
+  List<MediaResult> _suggestions = [];
+  bool _searching = false;
+  MediaResult? _picked;
 
   @override
   void dispose() {
+    _searchDebounce?.cancel();
     _workNewTitleController.dispose();
     _healthNotesController.dispose();
     _leisureNewTitleController.dispose();
@@ -82,6 +95,132 @@ class _AddEntrySheetState extends State<_AddEntrySheet> {
             selected: selected == v,
             onSelected: (_) => setState(() => onPick(v)),
           ),
+      ],
+    );
+  }
+
+  void _queueSearch() {
+    _searchDebounce?.cancel();
+    final text = _leisureNewTitleController.text.trim();
+    if (_picked != null ||
+        !_search.canSearch(_leisureType) ||
+        text.length < 2) {
+      _suggestions = [];
+      _searching = false;
+      return;
+    }
+    _searching = true;
+    _searchDebounce = Timer(const Duration(milliseconds: 400), _runSearch);
+  }
+
+  void _onLeisureTitleChanged(String text) {
+    setState(() {
+      if (_picked != null && text.trim() != _picked!.title) _picked = null;
+      _queueSearch();
+    });
+  }
+
+  Future<void> _runSearch() async {
+    final seq = ++_searchSeq;
+    final results = await _search.search(
+      _leisureNewTitleController.text,
+      type: _leisureType,
+    );
+    if (!mounted || seq != _searchSeq) return;
+    setState(() {
+      _suggestions = results;
+      _searching = false;
+    });
+  }
+
+  Future<void> _pickSuggestion(MediaResult result) async {
+    _searchDebounce?.cancel();
+    _searchSeq++;
+    setState(() {
+      _picked = result;
+      _leisureType = result.type;
+      _suggestions = [];
+      _searching = false;
+      _leisureTitleError = false;
+      _leisureNewTitleController.text = result.title;
+    });
+    final detailed = await _search.enrich(result);
+    if (!mounted || _picked?.key != result.key) return;
+    _picked = detailed;
+  }
+
+  Widget _suggestionList() {
+    final theme = Theme.of(context);
+    final hint = _picked == null ? _search.setupHint(_leisureType) : null;
+    if (hint != null) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
+        child: Text(
+          hint,
+          style: theme.textTheme.bodySmall
+              ?.copyWith(color: theme.colorScheme.secondary),
+        ),
+      );
+    }
+    if (_searching && _suggestions.isEmpty) {
+      return const Padding(
+        padding: EdgeInsets.symmetric(vertical: AppSpacing.sm),
+        child: LinearProgressIndicator(),
+      );
+    }
+    if (_suggestions.isEmpty) return const SizedBox.shrink();
+    final showRawgCredit = _suggestions.any((r) => r.source == 'rawg');
+    final list = ConstrainedBox(
+      constraints: const BoxConstraints(maxHeight: 240),
+      child: ListView(
+        shrinkWrap: true,
+        children: [
+          for (final r in _suggestions)
+            ListTile(
+              dense: true,
+              contentPadding: EdgeInsets.zero,
+              leading: _Poster(url: r.posterUrl),
+              title:
+                  Text(r.title, maxLines: 1, overflow: TextOverflow.ellipsis),
+              subtitle: Text(
+                [
+                  if (r.year != null) '${r.year}',
+                  if (r.subtitle != null) r.subtitle!,
+                ].join(' · '),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: theme.textTheme.bodySmall
+                    ?.copyWith(color: theme.colorScheme.secondary),
+              ),
+              onTap: () => _pickSuggestion(r),
+            ),
+        ],
+      ),
+    );
+    if (!showRawgCredit) return list;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        list,
+        TextButton(
+          style: TextButton.styleFrom(
+            padding: EdgeInsets.zero,
+            minimumSize: const Size(0, 32),
+            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          ),
+          onPressed: () => launchUrl(
+            RawgProvider.creditUrl,
+            mode: LaunchMode.externalApplication,
+          ),
+          child: Text(
+            RawgProvider.creditText,
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: theme.colorScheme.primary,
+              decoration: TextDecoration.underline,
+            ),
+          ),
+        ),
       ],
     );
   }
@@ -145,11 +284,12 @@ class _AddEntrySheetState extends State<_AddEntrySheet> {
           return;
         }
         await MediaStore().put(
-          MediaEntry(
-              id: id,
-              title: title,
-              type: _leisureType,
-              status: MediaStatus.want),
+          _picked?.toEntry(id: id, title: title) ??
+              MediaEntry(
+                  id: id,
+                  title: title,
+                  type: _leisureType,
+                  status: MediaStatus.want),
         );
     }
     if (mounted) Navigator.of(context).pop();
@@ -241,13 +381,18 @@ class _AddEntrySheetState extends State<_AddEntrySheet> {
               hint: 'e.g. Dune: Part Two',
               controller: _leisureNewTitleController,
               errorText: _leisureTitleError ? 'Enter a title' : null,
+              onChanged: _onLeisureTitleChanged,
             ),
           ),
           LabelledField(
             label: 'Kind',
-            child: _chips(MediaType.values, _leisureType, (t) => t.label,
-                (t) => _leisureType = t),
+            child: _chips(MediaType.values, _leisureType, (t) => t.label, (t) {
+              _leisureType = t;
+              _picked = null;
+              _queueSearch();
+            }),
           ),
+          _suggestionList(),
         ];
     }
   }
@@ -269,6 +414,33 @@ class _AddEntrySheetState extends State<_AddEntrySheet> {
           ),
         ..._fieldsForPillar(),
       ],
+    );
+  }
+}
+
+class _Poster extends StatelessWidget {
+  const _Poster({required this.url});
+
+  final String? url;
+
+  @override
+  Widget build(BuildContext context) {
+    final placeholder = Container(
+      width: 32,
+      height: 48,
+      color: Theme.of(context).colorScheme.surfaceContainerHighest,
+      child: const Icon(Icons.image_outlined, size: 16),
+    );
+    if (url == null) return placeholder;
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(4),
+      child: Image.network(
+        url!,
+        width: 32,
+        height: 48,
+        fit: BoxFit.cover,
+        errorBuilder: (_, __, ___) => placeholder,
+      ),
     );
   }
 }

@@ -1,0 +1,7 @@
+name = "trivet-media-proxy"
+main = "worker.js"
+compatibility_date = "2024-09-01"
+
+# Optional: only let your website call the proxy from a browser.
+# [vars]
+# ALLOWED_ORIGIN = "https://<username>.github.io"

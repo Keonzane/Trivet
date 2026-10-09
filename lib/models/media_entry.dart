@@ -46,6 +46,11 @@ class MediaEntry {
   final String review;
   final DateTime? completedAt;
 
+  // Metadata from a catalogue lookup (all optional).
+  final String? posterUrl;
+  final int? year;
+  final Map<String, String> externalIds; // e.g. {'tmdb': '438631'}
+
   const MediaEntry({
     required this.id,
     required this.title,
@@ -64,6 +69,9 @@ class MediaEntry {
     this.notes = '',
     this.review = '',
     this.completedAt,
+    this.posterUrl,
+    this.year,
+    this.externalIds = const {},
   });
 
   int get trackedMinutes => type == MediaType.film || type == MediaType.series
@@ -113,6 +121,9 @@ class MediaEntry {
           : this.status == MediaStatus.done
               ? completedAt
               : DateTime.now(),
+      posterUrl: posterUrl,
+      year: year,
+      externalIds: externalIds,
     );
   }
 
@@ -134,6 +145,9 @@ class MediaEntry {
         'notes': notes,
         'review': review,
         'completedAt': completedAt?.toIso8601String(),
+        'posterUrl': posterUrl,
+        'year': year,
+        'externalIds': externalIds,
       };
 
   factory MediaEntry.fromMap(Map<String, dynamic> map) => MediaEntry(
@@ -156,5 +170,10 @@ class MediaEntry {
         completedAt: map['completedAt'] == null
             ? null
             : DateTime.parse(map['completedAt'] as String),
+        posterUrl: map['posterUrl'] as String?,
+        year: map['year'] as int?,
+        externalIds: (map['externalIds'] as Map?)
+                ?.map((k, v) => MapEntry(k as String, v as String)) ??
+            const {},
       );
 }

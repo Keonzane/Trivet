@@ -1,0 +1,113 @@
+name: Build and deploy
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  MEDIA_PROXY_URL: ${{ secrets.MEDIA_PROXY_URL }}
+
+jobs:
+  web:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Write proxy URL file from secrets
+        run: jq -n --arg p "$MEDIA_PROXY_URL" '{MEDIA_PROXY_URL:$p}' > dart_defines.json
+
+      - name: Add web platform if missing
+        run: '[ -d web ] || flutter create . --platforms=web --project-name trivet'
+
+      - run: flutter pub get
+
+      - name: Build website
+        run: >
+          flutter build web --release
+          --dart-define-from-file=dart_defines.json
+          --base-href "/${{ github.event.repository.name }}/"
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: build/web
+
+      - id: deploy
+        uses: actions/deploy-pages@v4
+
+  android:
+    if: startsWith(github.ref, 'refs/tags/v') || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Write proxy URL file from secrets
+        run: jq -n --arg p "$MEDIA_PROXY_URL" '{MEDIA_PROXY_URL:$p}' > dart_defines.json
+
+      - name: Add Android platform if missing
+        run: '[ -d android ] || flutter create . --platforms=android --project-name trivet --org com.trivet'
+
+      - name: Make sure release builds can use the internet and open links
+        run: |
+          M=android/app/src/main/AndroidManifest.xml
+          grep -q 'android.permission.INTERNET' "$M" || \
+            sed -i 's#<application#<uses-permission android:name="android.permission.INTERNET"/>\n    <application#' "$M"
+          INTENT='<intent><action android:name="android.intent.action.VIEW" /><data android:scheme="https" /></intent>'
+          if ! grep -q 'android:scheme="https"' "$M"; then
+            if grep -q '<queries>' "$M"; then
+              sed -i "0,/<queries>/s##<queries>$INTENT#" "$M"
+            else
+              sed -i "s#</manifest>#<queries>$INTENT</queries></manifest>#" "$M"
+            fi
+          fi
+
+      - run: flutter pub get
+
+      - name: Build APK
+        run: flutter build apk --release --dart-define-from-file=dart_defines.json
+
+      - name: Name the APK
+        run: cp build/app/outputs/flutter-apk/app-release.apk "trivet-${{ github.ref_name }}.apk"
+
+      - name: Attach to GitHub Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: trivet-${{ github.ref_name }}.apk
+          generate_release_notes: true
+
+      - name: Upload APK (manual runs)
+        if: "!startsWith(github.ref, 'refs/tags/v')"
+        uses: actions/upload-artifact@v4
+        with:
+          name: trivet-apk
+          path: trivet-*.apk
