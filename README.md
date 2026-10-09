@@ -184,8 +184,8 @@ Anime and manga data from AniList.
 | --- | --- | --- | --- |
 | 1 | No API key, token or password is hardcoded in `lib/`, including in comments and commented-out code | Yes | Searched `lib/` and `pubspec.yaml` for key, secret, password, token and api_key, comments included. The only matches are comments explaining that keys live on the proxy; no key values. The TMDB and RAWG keys exist only as Cloudflare secrets. |
 | 2 | Anything private is in a gitignored config or passed with `--dart-define`, with an example file committed | Yes | The API keys are Cloudflare secrets set with `wrangler secret put`, never in the repo. The app only gets the proxy URL, through `--dart-define-from-file=dart_defines.json`; `dart_defines.example.json` is committed. `dart_defines.json` is committed on purpose because the URL is not secret (it is visible in the built web app anyway). Cloudflare account files (`media_proxy/.wrangler/`) are gitignored. |
-| 3 | No keystore, `key.properties` or signing credential is in the repository | Yes | No .jks, .keystore, key.properties, .pem or .env file exists. Ran `git ls-files \| Select-String -Pattern "jks\|keystore\|key\.properties\|\.pem\|\.env"`: no matches. [confirm after push] |
-| 4 | Git history is clean: I searched `git log -p` for password, secret, api key and token | Yes | Ran `git log -p \| Select-String -Pattern "password\|secret\|api.?key\|token" -CaseSensitive:$false`. Matches are only documentation and code that names the secrets (`TMDB_API_KEY`, `secrets.MEDIA_PROXY_URL`), never a value. [confirm after push] |
+| 3 | No keystore, `key.properties` or signing credential is in the repository | Yes | Checked a fresh clone of the pushed repo with `git ls-files` for .jks, .keystore, key.properties, .pem and .env: no matches. |
+| 4 | Git history is clean: I searched `git log -p` for password, secret, api key and token | Yes | Searched every added and removed line in `git log -p` for password, secret, api key and token. Matches are only documentation, checklist text and names like `TMDB_API_KEY` or `secrets.MEDIA_PROXY_URL`; no key values. Also searched for key-shaped strings (32-character hex, JWT, Google `AIza` keys): none. |
 | 5 | Any credential that was ever committed has been rotated | N/A | No credential was ever committed (see row 4), so there is nothing to rotate. |
 
 ## GitHub Actions
@@ -194,11 +194,11 @@ Anime and manga data from AniList.
 | --- | --- | --- | --- |
 | 6 | No secret value is written literally in any workflow YAML file | Yes | `.github/workflows/deploy.yml` is the only workflow. Its only secret is read as `${{ secrets.MEDIA_PROXY_URL }}`; no values are written in the file. |
 | 7 | Secrets are stored in repository Actions secrets and read with `${{ secrets.NAME }}` | Yes | `MEDIA_PROXY_URL` is a repository Actions secret (Settings → Secrets and variables → Actions) and the workflow reads it with `${{ secrets.MEDIA_PROXY_URL }}`. |
-| 8 | No workflow step echoes, dumps or debug-prints a secret, and I opened a recent run's log to confirm | Yes | No step uses `echo`, `cat` or debug output on the secret; it is only written into `dart_defines.json` for the build. [confirm: open the latest run's log in the Actions tab and check the URL step shows `***`] |
+| 8 | No workflow step echoes, dumps or debug-prints a secret, and I opened a recent run's log to confirm | Yes | No step echoes or prints the secret; it is only written into `dart_defines.json` for the build. Opened the latest "Build and deploy" run → web → "Write proxy URL file from secrets": `MEDIA_PROXY_URL` shows as `***` in the log. (The first run showed it blank because the secret hadn't been added yet; I added it and re-ran.) |
 | 9 | If I build a signed APK: the keystore is a base64 secret decoded to a file at build time, never printed | N/A | The Android job builds an APK with Flutter's default debug signing (`signingConfigs.getByName("debug")` in `android/app/build.gradle.kts`); there is no release keystore. |
 | 10 | Uploaded build artifacts contain no key file, keystore or generated config | Yes | The web job uploads `build/web` and the Android job uploads the APK. Neither contains a key or keystore; the only config compiled in is the proxy URL, which is not secret. |
 | 11 | Third-party actions are pinned to a commit SHA, not a moveable tag | No | Actions are pinned to version tags (`actions/checkout@v4`, `subosito/flutter-action@v2`, `softprops/action-gh-release@v2` and others), not commit SHAs. Next step: replace each tag with its commit SHA. |
-| 12 | Secret scanning and push protection are enabled on the repository | Yes | [confirm: turn on in Settings → Code security → Secret Protection, then check it shows Enabled] |
+| 12 | Secret scanning and push protection are enabled on the repository | Yes | Secret scanning and push protection are both enabled in the repo's Settings → Advanced Security → Secret Protection. Push protection for my account is also on in my account Settings → Code security. |
 
 ## Backend and security rules
 
@@ -227,11 +227,11 @@ therefore N/A.
 
 | # | Check | Yes / No / N/A | Evidence |
 | --- | --- | --- | --- |
-| 21 | No student number, personal email, phone number or home address in the repository or in commit messages | Yes | Commit author is the GitHub noreply address (checked with `git log --format="%an %ae %s"`). `android/local.properties` (local paths) and `media_proxy/.wrangler/` (Cloudflare account) are gitignored. [confirm after push] |
+| 21 | No student number, personal email, phone number or home address in the repository or in commit messages | Yes | Every commit uses a `@users.noreply.github.com` author address (`git log --format="%an %ae %s"`). `android/local.properties` and `media_proxy/.wrangler/` are gitignored and not in the repo. |
 | 22 | No classmate's personal data in the repository | Yes | The app only stores the person's own entries and the project contains no data about anyone else. |
 | 23 | Dependencies come from pub.dev, and `build/` and `.dart_tool/` are gitignored | Yes | Runtime dependencies are google_fonts, shared_preferences, http, url_launcher and device_preview, all from pub.dev. `.gitignore` lists `.dart_tool/` and `build/`. |
 | 24 | Images, fonts and other assets are mine, licensed, or credited | Yes | Fonts are Space Grotesk and IBM Plex Sans (SIL OFL) via `google_fonts`. Search data comes from TMDB, RAWG, Open Library and AniList, credited in the README's Credits section; RAWG is also credited in the app with the link its terms require. Screenshots are my own captures. |
-| 25 | Repository visibility is deliberate, and I checked it after my last push | Yes | Public, so the instructor can view it. [confirm: open the repo in a private window after the final push and check no `.dart_tool`, `build`, `.wrangler` or `local.properties` is visible] |
+| 25 | Repository visibility is deliberate, and I checked it after my last push | Yes | Public, so the instructor can view it. Opened it signed out after the push: no `.dart_tool`, `build`, `.wrangler` or `local.properties` is in the repo. |
 
 ## Anything I found and fixed
 
@@ -243,5 +243,8 @@ media search meant handling API keys: instead of putting them in the app,
 they live as Cloudflare secrets in a proxy, and I removed the unused IGDB
 code that would have needed a Twitch client secret. An old GitHub
 secret-scanning alert was a false positive from a committed `.dart_tool`
-browser profile; `.dart_tool/` is now gitignored. One item is still open:
+browser profile; `.dart_tool/` is now gitignored. Checking row 8 showed the
+first deploy ran with an empty proxy URL because I hadn't added the
+`MEDIA_PROXY_URL` secret yet, so film and game search were off on the
+website; I added the secret and re-ran the deploy. One item is still open:
 workflow actions are pinned to tags, not commit SHAs (row 11).
