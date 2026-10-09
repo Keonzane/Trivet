@@ -137,9 +137,9 @@ package.
 | --- | --- |
 | ![Health screen](screenshots/health.png) | ![Leisure screen](screenshots/leisure.png) |
 
-| Add entry sheet |
-| --- |
-| ![Add entry sheet](screenshots/add-entry.png) |
+| New project | New workout | New title |
+| --- | --- | --- |
+| ![New project sheet](screenshots/add-project.png) | ![New workout sheet](screenshots/add-workout.png) | ![New title sheet](screenshots/add-title.png) |
 
 ## 7. Known issues and next steps
 
