@@ -1,11 +1,11 @@
 {
-    "name": "trivet",
-    "short_name": "trivet",
+    "name": "Trivet",
+    "short_name": "Trivet",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
     "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "description": "Trivet: a weekly balance tracker for Work, Health and Leisure.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [
