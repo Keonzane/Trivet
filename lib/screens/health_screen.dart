@@ -77,8 +77,9 @@ class _HealthScreenState extends State<HealthScreen> {
     var streak = 0;
     var cursor = DateTime.now();
     cursor = DateTime(cursor.year, cursor.month, cursor.day);
-    if (!days.contains(cursor))
+    if (!days.contains(cursor)) {
       cursor = cursor.subtract(const Duration(days: 1));
+    }
     while (days.contains(cursor)) {
       streak++;
       cursor = cursor.subtract(const Duration(days: 1));
@@ -195,7 +196,7 @@ class _HealthScreenState extends State<HealthScreen> {
                 ],
               ),
             if (weekWorkouts.isEmpty && upcoming.isEmpty)
-              EmptyState(
+              const EmptyState(
                 message: 'No workouts logged yet. Start with anything.',
                 icon: Icons.favorite_outline,
               ),
