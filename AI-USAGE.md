@@ -139,7 +139,9 @@ Repository: https://github.com/Keonzane/Trivet
   found RAWG instead, which only needs a free key, and switched games
   search to it. I committed `dart_defines.json`,
   because it only holds the proxy URL and without it film and game search
-  are off for anyone who clones the repo.
+  are off for anyone who clones the repo. I later removed `setup.bat`,
+  `tool/patch_android.ps1` and `START_HERE.md`, because the platform
+  folders and the Android changes they made were already committed.
 - Commit: https://github.com/Keonzane/Trivet/commit/d0cb68b
 
 ## Where the AI got it wrong
@@ -264,34 +266,28 @@ Repository: https://github.com/Keonzane/Trivet
 
 ### One part the AI wrote: `ListStore` in `lib/services/storage_service.dart`
 
-Claude wrote this. Below is exactly what it does, why it is built that way,
-and why I kept it.
+Claude wrote this. Below is what it does, why it is built that way, and why
+I kept it.
 
 - File: `lib/services/storage_service.dart`
 - Commit: https://github.com/Keonzane/Trivet/commit/639378e
-- What it does: this is where all of Trivet's data lives. `ListStore<T>` is
-  one generic class used for all five kinds of data (projects, work logs,
-  workouts, media, leisure logs). Each item is turned into a map with
-  `toMap`, then into a JSON string, and the list of strings is saved under
-  one key in shared_preferences. `load()` reads them back with `fromMap`.
-  If one record is broken it is skipped (`try` / `catch` / `continue`), so
-  one bad record can't stop the rest from loading. `put()` replaces an item
-  with the same id or adds it if it is new, and `removeWhere()` deletes.
-- Why it is built that way: all five lists are saved the same way, so one
-  class with the differences passed in (`key`, `toMap`, `fromMap`, `idOf`)
-  replaces five copies of the same code. shared_preferences is enough
-  because the app only stores a few hundred small records on the device,
-  with no account or server.
-- Why I kept it: it does what my proposal planned (save everything on the
-  device with shared_preferences) without repeating the same save and load
-  code five times. When I asked for skipping broken records, `put()` and
-  `removeWhere()`, they were added to this one class and every screen got
-  them at once, which is how I know the design works. I tested it by
-  adding, editing and deleting entries on every tab and restarting the
-  app to check everything was still there.
-- Key details: `WeekRange.containing()` finds the Monday that starts the week. It builds
-  the date with `DateTime(year, month, day - …)` instead of subtracting
-  days as a `Duration`, because a daylight-saving change can make a day 23
-  or 25 hours long and push the start into the wrong day. The
-  `hoursIn(week)` and `doneMinutesIn(week)` extensions add up this week's
-  hours for the Dashboard. Only workouts marked done count.
+- What it does: `ListStore` is the part of the app that saves and loads all
+  your data on the device. Trivet has five kinds of data (projects, work
+  logs, workouts, media and leisure logs), and all five use this one class.
+  Each item is turned into text (JSON), and the whole list is saved under
+  one name using `shared_preferences`. When a screen opens, `load()` turns
+  the text back into items. If one saved item is broken, it's skipped, so
+  the rest still load. `put()` updates an item if one with the same id
+  already exists, or adds it if it's new. `removeWhere()` deletes every
+  item that matches a rule. That's how deleting a project also deletes all
+  of its work logs.
+- Why it is built that way: all five kinds of data are saved the same way.
+  The only differences are the save name, how to turn the item into text
+  and back, and how to find its id. So instead of writing the same code
+  five times, there's one class, and each kind of data passes in its own
+  differences. `shared_preferences` is enough because the app stores only
+  a small amount of data on the phone, with no accounts or server.
+- Why I kept it: because there's only one class, any improvement reaches
+  every screen at once. When skipping broken records, `put()` and
+  `removeWhere()` were added to this class, every tab got them without any
+  other changes.
