@@ -35,8 +35,7 @@ Live app: https://keonzane.github.io/Trivet/
   - **Fonts.** `google_fonts` downloads Space Grotesk and IBM Plex Sans the
     first time the app runs; after that they're cached.
 - To run your own proxy instead of mine, see `MEDIA_SEARCH_SETUP.md`, then
-  put your Worker's URL in `dart_defines.json` (copy
-  `dart_defines.example.json`).
+  replace the URL in `dart_defines.json` with your Worker's URL.
 
 ## 3. How to run it
 
@@ -183,7 +182,7 @@ Anime and manga data from AniList.
 | # | Check | Yes / No / N/A | Evidence |
 | --- | --- | --- | --- |
 | 1 | No API key, token or password is hardcoded in `lib/`, including in comments and commented-out code | Yes | Searched `lib/` and `pubspec.yaml` for key, secret, password, token and api_key, comments included. The only matches are comments explaining that keys live on the proxy; no key values. The TMDB and RAWG keys exist only as Cloudflare secrets. |
-| 2 | Anything private is in a gitignored config or passed with `--dart-define`, with an example file committed | Yes | The API keys are Cloudflare secrets set with `wrangler secret put`, never in the repo. The app only gets the proxy URL, through `--dart-define-from-file=dart_defines.json`; `dart_defines.example.json` is committed. `dart_defines.json` is committed on purpose because the URL is not secret (it is visible in the built web app anyway). Cloudflare account files (`media_proxy/.wrangler/`) are gitignored. |
+| 2 | Anything private is in a gitignored config or passed with `--dart-define`, with an example file committed | Yes | The API keys are Cloudflare secrets set with `wrangler secret put`, never in the repo. The app only gets the proxy URL, through `--dart-define-from-file=dart_defines.json`. `dart_defines.json` is committed on purpose because the URL is not secret (it is visible in the built web app anyway), so no separate example file is needed. Cloudflare account files (`media_proxy/.wrangler/`) are gitignored. |
 | 3 | No keystore, `key.properties` or signing credential is in the repository | Yes | Checked a fresh clone of the pushed repo with `git ls-files` for .jks, .keystore, key.properties, .pem and .env: no matches. |
 | 4 | Git history is clean: I searched `git log -p` for password, secret, api key and token | Yes | Searched every added and removed line in `git log -p` for password, secret, api key and token. Matches are only documentation, checklist text and names like `TMDB_API_KEY` or `secrets.MEDIA_PROXY_URL`; no key values. Also searched for key-shaped strings (32-character hex, JWT, Google `AIza` keys): none. |
 | 5 | Any credential that was ever committed has been rotated | N/A | No credential was ever committed (see row 4), so there is nothing to rotate. |

@@ -41,10 +41,10 @@ Check it (replace the URL):
     curl "https://trivet-media-proxy.you.workers.dev/rawg/api/games?search=zelda&page_size=3"
 
 ## 3. Run the app
-    cp dart_defines.example.json dart_defines.json   # put your proxy URL in
+Put your proxy URL in `dart_defines.json`, then:
+
     flutter run --dart-define-from-file=dart_defines.json
 
-- VS Code: `.vscode/launch.json` already passes the file, so F5 works.
 - Android Studio: Run → Edit Configurations → Additional run args:
   `--dart-define-from-file=dart_defines.json`
 - The URL is baked in at build time: after changing it, stop and re-run.
