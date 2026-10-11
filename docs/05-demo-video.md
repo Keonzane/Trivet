@@ -1,20 +1,20 @@
 # Demo video
 
-**Link:** _(add the public Google Drive link here once it is uploaded)_
+**Link:** https://drive.google.com/drive/folders/1QbOm9qNO4zBzRr51rlNKsIUHO6CEy8Ib?usp=sharing
 **Length:** 3 to 5 minutes
-**Recorded on:** _(the device you recorded on)_
+**Recorded with:** screen and webcam, with my own voice
 
 ## What it shows
 
-- 0:00 What Trivet is and who it is for
-- 0:20 Home: the triad chart, the three stat cards and the nudge
-- 0:50 Work: add a project, log hours, open the project detail
-- 1:30 Health: log a workout, tick it done, the bar chart and streak
-- 2:10 Leisure: add a title with search, pick a result, open its detail,
-  update progress, then mark it done with a rating and review
-- 3:10 Swipe to delete and Undo
-- 3:30 Dark mode
-- 3:45 Back on Home: the chart and totals now reflect what was logged
+- 0:00 Intro: who I am, what Trivet is, and the problem it solves
+- 0:20 The app and my choices: Home, Work, Health, Leisure (searching
+  for a title, the poster, marking it done), swipe to delete with Undo
+- 2:00 Code structure: models, services, widgets and screens; `setState`
+  per screen
+- 2:20 AI segment: how I used Claude, where it got things wrong, the
+  media search I wrote (`media_search_service.dart`), the rating and the
+  poster, and the AI-written `ListStore` I understand best
+- 4:40 What I would do next
 
 ## Before recording
 

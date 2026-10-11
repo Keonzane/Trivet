@@ -5,7 +5,7 @@
 > week, side by side, so you can see when one is crowding out the others.
 
 **Live demo:** https://keonzane.github.io/Trivet/  
-**Demo video:** see [docs/05-demo-video.md](docs/05-demo-video.md)  
+**Demo video:** https://drive.google.com/drive/folders/1QbOm9qNO4zBzRr51rlNKsIUHO6CEy8Ib?usp=sharing (what it shows: [docs/05-demo-video.md](docs/05-demo-video.md))  
 **Course:** Applications Development and Emerging Technologies (6ADET), Holy Angel University  
 **Author:** Almodovar
 
