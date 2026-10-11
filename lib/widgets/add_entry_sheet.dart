@@ -186,6 +186,7 @@ class _AddEntrySheetState extends State<_AddEntrySheet> {
                 [
                   if (r.year != null) '${r.year}',
                   if (r.subtitle != null) r.subtitle!,
+                  if (r.rating != null) '★ ${r.rating!.toStringAsFixed(1)}',
                 ].join(' · '),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
