@@ -264,6 +264,15 @@ Repository: https://github.com/Keonzane/Trivet
     something else while waiting, so old details never replace a newer
     choice. Editing the title after picking clears the pick.
 
+#### 2. Rating in search suggestions
+- File: `lib/widgets/add_entry_sheet.dart`
+- Commit: https://github.com/Keonzane/Trivet/commit/9277c45
+- What it does, and why it is built that way: this line adds a star rating
+  to each search suggestion, like `2021 · Film · ★ 7.8`, but only when the
+  title has a rating, so titles without one don't cause an error. The
+  rating is rounded to one decimal so long numbers like `7.8333` show as a
+  short, easy-to-read `7.8`.
+
 ### One part the AI wrote: `ListStore` in `lib/services/storage_service.dart`
 
 Claude wrote this. Below is what it does, why it is built that way, and why
