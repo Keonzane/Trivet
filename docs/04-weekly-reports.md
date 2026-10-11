@@ -48,7 +48,7 @@ _Written at hand-in, from the commits._
 - Undo instead of a confirmation dialog, because a swipe is easy to do by
   accident. It disappears after 5 seconds; 10 felt too long.
 
-**Hours spent, roughly:** _(fill in)_
+**Hours spent, roughly:** about 8 hours
 
 **Next week I will:**
 - Hand in. After that: tests for the week-range logic, a "follow system"
@@ -86,7 +86,7 @@ _Written at hand-in, from the commits._
   Dashboard. On a pillar's own tab the disabled picker looked like nothing
   was selected.
 
-**Hours spent, roughly:** _(fill in)_
+**Hours spent, roughly:** about 8 hours
 
 **Next week I will:**
 - Add leisure search, deploy the app, and fill in the security checklist.
@@ -158,7 +158,7 @@ placeholder and a separate Add entry sheet per pillar.
   a row, and it defaulted to the oldest entry, which made "add new" look
   broken.
 
-**Hours spent, roughly:** _(fill in)_
+**Hours spent, roughly:** about 8 hours
 
 **Next week I will:**
 - Add delete, screenshots with data, and the detail screens from the
@@ -201,7 +201,7 @@ placeholder and a separate Add entry sheet per pillar.
 - The storage spike planned for September 24 is confirmed: a real project
   and workout persist through the app.
 
-**Hours spent, roughly:** _(fill in)_
+**Hours spent, roughly:** about 8 hours
 
 **Next week I will:**
 - Build the Dashboard, the media detail screen and one shared Add entry
