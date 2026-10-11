@@ -150,14 +150,16 @@ Repository: https://github.com/Keonzane/Trivet
   swipe is easy to do by accident, and the TMDB credit that TMDB's terms
   require, shown the same way as the RAWG credit.
 - What it gave back: `DismissibleRow` now shows a "Deleted" snackbar with
-  an Undo button for 10 seconds instead of the confirmation dialog. Each screen's delete
-  returns an undo function, and a new `ListStore.restore()` puts the
+  an Undo button instead of the confirmation dialog. Each screen's delete returns an undo function, and a new `ListStore.restore()` puts the
   deleted items back in their original order, together with their logged
   hours or time. The search suggestions now show the TMDB credit under
   film and TV results, next to the RAWG one.
-- What I kept, changed, and why: [fill in after testing: what you kept or
-  changed, and why]
-- Commit: [link after you commit]
+- What I kept, changed, and why: the first version kept the Undo message
+  on screen until it was tapped. I asked for it to disappear by itself, so
+  the delete becomes final after a short wait. It was set to 10 seconds,
+  which felt too long, so I changed it to 5 seconds.
+- Commit: - Commit: https://github.com/Keonzane/Trivet/commit/3173954
+
 
 ## Where the AI got it wrong
 
