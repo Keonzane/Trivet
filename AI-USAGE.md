@@ -158,7 +158,7 @@ Repository: https://github.com/Keonzane/Trivet
   on screen until it was tapped. I asked for it to disappear by itself, so
   the delete becomes final after a short wait. It was set to 10 seconds,
   which felt too long, so I changed it to 5 seconds.
-- Commit: - Commit: https://github.com/Keonzane/Trivet/commit/3173954
+- Commit: https://github.com/Keonzane/Trivet/commit/3173954
 
 
 ## Where the AI got it wrong
