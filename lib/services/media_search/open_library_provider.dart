@@ -30,7 +30,7 @@ class OpenLibraryProvider extends MediaProvider {
       'q': query,
       'limit': '8',
       'fields': 'key,title,author_name,first_publish_year,cover_i,'
-          'number_of_pages_median,ratings_average,isbn',
+          'number_of_pages_median,ratings_average',
     });
     final res = await _client.get(uri, headers: {'Accept': 'application/json'});
     if (res.statusCode != 200) {
@@ -46,7 +46,6 @@ class OpenLibraryProvider extends MediaProvider {
       final workId = key.replaceFirst('/works/', '');
       final cover = d['cover_i'] as int?;
       final authors = (d['author_name'] as List?)?.cast<String>() ?? const [];
-      final isbns = (d['isbn'] as List?)?.cast<String>() ?? const [];
       final rating = (d['ratings_average'] as num?)?.toDouble();
       out.add(MediaResult(
         source: id,
@@ -61,7 +60,6 @@ class OpenLibraryProvider extends MediaProvider {
         subtitle: authors.isEmpty ? null : authors.first,
         externalIds: {
           'openlibrary': workId,
-          if (isbns.isNotEmpty) 'isbn': isbns.first,
         },
         totalPages: (d['number_of_pages_median'] as int?) ?? 0,
       ));

@@ -77,7 +77,6 @@ class RawgProvider extends MediaProvider {
         subtitle: details.isEmpty ? null : details.join(' · '),
         externalIds: {
           'rawg': '${g['id']}',
-          if (g['slug'] is String) 'rawg_slug': g['slug'] as String,
         },
       ));
     }
