@@ -124,6 +124,20 @@ class _MediaDetailScreenState extends State<MediaDetailScreen> {
       title: _entry.title,
       loading: _loading,
       children: [
+        if (_entry.posterUrl != null) ...[
+          Center(
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: Image.network(
+                _entry.posterUrl!,
+                height: 200,
+                fit: BoxFit.contain,
+                errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+              ),
+            ),
+          ),
+          const SizedBox(height: AppSpacing.lg),
+        ],
         Caption(_entry.type.label),
         const SizedBox(height: AppSpacing.lg),
         _field(
