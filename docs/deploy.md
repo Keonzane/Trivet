@@ -1,7 +1,7 @@
 # Publishing Trivet from GitHub
 
 GitHub builds the app for you. The built app and website contain **no API
-keys**: keys live only in Cloudflare (see MEDIA_SEARCH_SETUP.md). GitHub
+keys**: keys live only in Cloudflare (see [media-search-setup.md](media-search-setup.md)). GitHub
 only needs your proxy's address.
 
 | You do | You get |
@@ -12,7 +12,7 @@ only needs your proxy's address.
 
 ## One-time setup
 
-1. **Deploy the proxy** first (MEDIA_SEARCH_SETUP.md, steps 1–2).
+1. **Deploy the proxy** first ([media-search-setup.md](media-search-setup.md), steps 1–2).
 2. **Push the project** to a GitHub repo with the default branch named `main`.
    Run `git status` first: `local.properties`, `.wrangler`, `.dart_tool` and
    `build` must NOT be listed.

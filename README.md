@@ -1,67 +1,48 @@
 # Trivet
 
-[![Made with AI](https://img.shields.io/badge/Made_with-AI_assistance-blue)](AI-USAGE.md)
+> A weekly balance tracker for university students and early-career
+> workers: it shows how many hours went into Work, Health and Leisure this
+> week, side by side, so you can see when one is crowding out the others.
 
-Built with heavy help from Claude (Anthropic): Claude wrote most of the
-code in `lib/`, while I designed the app and wrote the leisure media
-search, the rating in search suggestions and the poster on the detail
-screen. See [AI-USAGE.md](AI-USAGE.md) for exactly what I asked for, what I
-kept or changed, and where the AI got it wrong.
+**Live demo:** https://keonzane.github.io/Trivet/  
+**Demo video:** see [docs/05-demo-video.md](docs/05-demo-video.md)  
+**Course:** Applications Development and Emerging Technologies (6ADET), Holy Angel University  
+**Author:** Almodovar
 
-## 1. Overview
+This repository is in my own GitHub account and is public on purpose.
+There is no `student.json` here and there should not be one. See
+[docs/06-security-and-privacy.md](docs/06-security-and-privacy.md) for what
+that means for secrets and personal data.
 
-Trivet is a weekly balance tracker for university students and
-early-career workers whose week isn't fixed by an employer, timetable, or
-parent. It shows how many hours went into Work, Health, and Leisure this
-week, side by side, so a person can see when one pillar is crowding out
-the others, without a made-up "balance score" behind it.
+---
 
-Live app: https://keonzane.github.io/Trivet/
+## Screenshots
 
-## 2. Setup and installation
+| Home (Dashboard) | Work |
+| --- | --- |
+| ![Home dashboard](docs/assets/screen-home.png) | ![Work screen](docs/assets/screen-work.png) |
 
-- Built against Flutter's stable channel, Dart SDK `>=3.3.0 <4.0.0` (see
-  `pubspec.yaml`).
-- Clone the repository, then from the project root:
+| Health | Leisure |
+| --- | --- |
+| ![Health screen](docs/assets/screen-health.png) | ![Leisure screen](docs/assets/screen-leisure.png) |
 
-  ```
-  flutter pub get
-  ```
+| New project | New workout | New title |
+| --- | --- | --- |
+| ![New project sheet](docs/assets/screen-add-project.png) | ![New workout sheet](docs/assets/screen-add-workout.png) | ![New title sheet](docs/assets/screen-add-title.png) |
 
-- All of a person's entries are stored locally on the device with
-  `shared_preferences` and never sent anywhere.
-- The only network use is:
-  - **Leisure search.** Typing a title searches Open Library and AniList
-    directly (no key needed), and TMDB (films, TV) and RAWG (games)
-    through a small Cloudflare Worker in `media_proxy/`. The API keys live
-    only in that Worker as Cloudflare secrets. The app only knows the
-    Worker's address, which it reads from `dart_defines.json`.
-  - **Fonts.** `google_fonts` downloads Space Grotesk and IBM Plex Sans the
-    first time the app runs; after that they're cached.
-- To run your own proxy instead of mine, see `MEDIA_SEARCH_SETUP.md`, then
-  replace the URL in `dart_defines.json` with your Worker's URL.
+## What it does
 
-## 3. How to run it
+- Log hours against work projects, with a status, due date and notes.
+- Plan and tick off workouts (Push, Pull, Legs, Cardio), with a streak and
+  a bar chart of minutes per day.
+- Keep a shelf of books, films, series and games, found by searching TMDB,
+  RAWG, Open Library and AniList, and track progress, ratings and reviews.
+- See the week on the Dashboard: a triangle chart comparing the three
+  pillars, this week's hours per pillar, and a nudge naming the thinnest
+  one.
+- Everything is saved on the device. Light and dark mode.
 
-```
-flutter run -d chrome --dart-define-from-file=dart_defines.json
-```
-
-or, on Windows, `run.bat` (same command). Without the
-`--dart-define-from-file` part the app still runs, but film, TV and game
-search are switched off; books and anime still work.
-
-In debug mode the app opens inside a phone frame (Device Preview). On
-launch you should see four tabs, **Home**, **Work**, **Health** and
-**Leisure**, in Design System v2's Paper/Ink colours. The sun/moon button
-at the top right switches between light and dark mode.
-
-There are no automated tests yet (`test/` is empty).
-
-The `main` branch is built and published to GitHub Pages automatically by
-`.github/workflows/deploy.yml` (see `DEPLOY.md`).
-
-## 4. Features and usage
+### In more detail
 
 **Home (Dashboard)** shows the week's date range, the triad chart
 comparing the three pillars, a stat card per pillar with this week's
@@ -105,7 +86,18 @@ Every list supports swipe-left-to-delete. A "Deleted" message with an
 **Undo** button appears for 5 seconds; Undo puts the item back, together
 with its logged hours or time. After 5 seconds the delete is final.
 
-## 5. Project structure
+## Built with
+
+| | |
+| --- | --- |
+| Framework | Flutter (Dart SDK `>=3.3.0 <4.0.0`), Material 3 |
+| State | `StatefulWidget` and `setState`, one screen at a time; no state management package |
+| Storage | `shared_preferences`, one key per model, through a generic `ListStore<T>` |
+| Other packages | `google_fonts` (Space Grotesk and IBM Plex Sans), `http` (leisure search), `url_launcher` (the TMDB and RAWG credit links), `device_preview` (the phone frame in the browser) |
+| Search proxy | a Cloudflare Worker in `media_proxy/` that holds the TMDB and RAWG keys |
+| Deploy | GitHub Actions (`.github/workflows/deploy.yml`) to GitHub Pages, plus an APK |
+
+### Project structure
 
 ```
 lib/
@@ -132,21 +124,75 @@ State is held per screen with `StatefulWidget` and `setState`, loaded
 from and saved back to the matching store. There's no state management
 package.
 
-## 6. Screenshots
+## Running it yourself
 
-| Home (Dashboard) | Work |
-| --- | --- |
-| ![Home dashboard](screenshots/home.png) | ![Work screen](screenshots/work.png) |
+The quickest way is the live demo: it runs in the browser with nothing to
+install. To run it from the code, with Flutter on the stable channel:
 
-| Health | Leisure |
-| --- | --- |
-| ![Health screen](screenshots/health.png) | ![Leisure screen](screenshots/leisure.png) |
+```bash
+flutter pub get
+flutter run -d chrome --dart-define-from-file=dart_defines.json
+```
 
-| New project | New workout | New title |
+or `flutter run -d web-server --web-port 8080 --dart-define-from-file=dart_defines.json`
+and open http://localhost:8080. On Windows, `run.bat -d chrome` runs the
+same command.
+
+Without the `--dart-define-from-file` part the app still runs, but film, TV
+and game search are off; books and anime still work. The first launch needs
+an internet connection, because `google_fonts` downloads the two fonts.
+
+In the browser, including the live site, the app opens inside a phone frame
+(Device Preview), so it is shown at the size it was designed for instead of
+stretched across a desktop window. On a phone it runs without the frame.
+
+There are no automated tests yet.
+
+The `main` branch is built and published to GitHub Pages automatically; see
+[docs/deploy.md](docs/deploy.md).
+
+### Environment variables
+
+The app reads one value at build time, from `dart_defines.json`. It is
+committed, because it holds only the address of my search proxy, which is
+not secret. The format is in `dart_defines.example.json`.
+
+| Variable | What it is | Where to get one |
 | --- | --- | --- |
-| ![New project sheet](screenshots/add-project.png) | ![New workout sheet](screenshots/add-workout.png) | ![New title sheet](screenshots/add-title.png) |
+| `MEDIA_PROXY_URL` | the address of the Cloudflare Worker that searches TMDB and RAWG | mine is already in `dart_defines.json`; to run your own, see [docs/media-search-setup.md](docs/media-search-setup.md) |
 
-## 7. Known issues and next steps
+The API keys (`TMDB_API_KEY`, `RAWG_API_KEY`) are never in the app or this
+repository. They are Cloudflare secrets on the Worker.
+
+## Privacy and secrets
+
+- Everything a person logs (projects, hours, workouts, titles, ratings,
+  notes) is stored only on their device with `shared_preferences`. There
+  are no accounts, and nothing they log leaves the device. Leisure search
+  sends only the typed title to the search services.
+- The TMDB and RAWG keys live only in Cloudflare as Worker secrets; the
+  deploy workflow reads the proxy URL from a repository secret. The built
+  app contains no key.
+- The app has no sample data, and the screenshots and video contain no real
+  personal information.
+
+## Project documentation
+
+| Document | |
+| --- | --- |
+| [Proposal](docs/01-proposal.md) | the problem, the users, the scope |
+| [Mockup and wireframes](docs/02-mockup.md) | what it looks like, and the screen flow |
+| [Design system](docs/03-design-system.md) | colours, type, spacing, components |
+| [Weekly reports](docs/04-weekly-reports.md) | what happened each week |
+| [Demo video](docs/05-demo-video.md) | the recording and what it shows |
+| [Security and privacy](docs/06-security-and-privacy.md) | the checklist, filled in |
+| [Deploying](docs/deploy.md) | how GitHub builds and publishes the app |
+| [Leisure search setup](docs/media-search-setup.md) | running your own search proxy |
+
+## Status and what is next
+
+Everything in the MVP works, plus the triad chart (stretch 1) and leisure
+search. The routine builder (stretch 2) was not built.
 
 - **Leisure time is recorded on the day you update progress**, not the
   day you actually read or watched. Changing progress on Monday for
@@ -165,92 +211,35 @@ package.
 - **Book search depends on Open Library.** If openlibrary.org is
   unreachable (down, or blocked on some networks), Book search only shows
   AniList manga results.
+- **No desktop layout.** On wide screens only the navigation moves to a
+  side rail; the screens keep their phone layout instead of the grids in
+  my wireframes.
 - **No automated tests yet.**
 
-## AI usage
-
-This project was built with AI assistance. See `AI-USAGE.md` for the
-tool, what I asked for, what I kept or changed, and where it went wrong.
-
-## Weekly records
-
-- `REPORT.md`: weekly increment reports.
+Next, I would add weekly goals per pillar shown as progress on the stat
+cards, a look back at previous weeks on the Dashboard, tests for the
+week-range logic, a "follow system" theme option, and Google Books as a
+backup when Open Library is down.
 
 ## Credits
 
-This product uses the TMDB API but is not endorsed or certified by TMDB.
-Game data from RAWG (https://rawg.io). Book data from Open Library.
-Anime and manga data from AniList.
+- Packages: see `pubspec.yaml`.
+- Fonts: Space Grotesk and IBM Plex Sans (SIL Open Font License), through
+  `google_fonts`.
+- This product uses the TMDB API but is not endorsed or certified by TMDB.
+  Game data from RAWG (https://rawg.io). Book data from Open Library.
+  Anime and manga data from AniList.
 
-# Security checklist
+## AI use
 
-## Secrets and credentials
+[![Made with AI](https://img.shields.io/badge/Made_with-AI_assistance-blue)](AI-USAGE.md)
 
-| # | Check | Yes / No / N/A | Evidence |
-| --- | --- | --- | --- |
-| 1 | No API key, token or password is hardcoded in `lib/`, including in comments and commented-out code | Yes | Searched `lib/` and `pubspec.yaml` for key, secret, password, token and api_key, comments included. The only matches are comments explaining that keys live on the proxy; no key values. The TMDB and RAWG keys exist only as Cloudflare secrets. |
-| 2 | Anything private is in a gitignored config or passed with `--dart-define`, with an example file committed | Yes | The API keys are Cloudflare secrets set with `wrangler secret put`, never in the repo. The app only gets the proxy URL, through `--dart-define-from-file=dart_defines.json`. `dart_defines.json` is committed on purpose because the URL is not secret (it is visible in the built web app anyway), so no separate example file is needed. Cloudflare account files (`media_proxy/.wrangler/`) are gitignored. |
-| 3 | No keystore, `key.properties` or signing credential is in the repository | Yes | Checked a fresh clone of the pushed repo with `git ls-files` for .jks, .keystore, key.properties, .pem and .env: no matches. |
-| 4 | Git history is clean: I searched `git log -p` for password, secret, api key and token | Yes | Searched every added and removed line in `git log -p` for password, secret, api key and token. Matches are only documentation, checklist text and names like `TMDB_API_KEY` or `secrets.MEDIA_PROXY_URL`; no key values. Also searched for key-shaped strings (32-character hex, JWT, Google `AIza` keys): none. |
-| 5 | Any credential that was ever committed has been rotated | N/A | No credential was ever committed (see row 4), so there is nothing to rotate. |
+Built with heavy help from Claude (Anthropic): Claude wrote most of the
+code in `lib/`, while I designed the app and wrote the leisure media
+search, the rating in search suggestions and the poster on the detail
+screen. See [AI-USAGE.md](AI-USAGE.md) for exactly what I asked for, what I
+kept or changed, and where the AI got it wrong.
 
-## GitHub Actions
+## Licence
 
-| # | Check | Yes / No / N/A | Evidence |
-| --- | --- | --- | --- |
-| 6 | No secret value is written literally in any workflow YAML file | Yes | `.github/workflows/deploy.yml` is the only workflow. Its only secret is read as `${{ secrets.MEDIA_PROXY_URL }}`; no values are written in the file. |
-| 7 | Secrets are stored in repository Actions secrets and read with `${{ secrets.NAME }}` | Yes | `MEDIA_PROXY_URL` is a repository Actions secret (Settings → Secrets and variables → Actions) and the workflow reads it with `${{ secrets.MEDIA_PROXY_URL }}`. |
-| 8 | No workflow step echoes, dumps or debug-prints a secret, and I opened a recent run's log to confirm | Yes | No step echoes or prints the secret; it is only written into `dart_defines.json` for the build. Opened the latest "Build and deploy" run → web → "Write proxy URL file from secrets": `MEDIA_PROXY_URL` shows as `***` in the log. (The first run showed it blank because the secret hadn't been added yet; I added it and re-ran.) |
-| 9 | If I build a signed APK: the keystore is a base64 secret decoded to a file at build time, never printed | N/A | The Android job builds an APK with Flutter's default debug signing (`signingConfigs.getByName("debug")` in `android/app/build.gradle.kts`); there is no release keystore. |
-| 10 | Uploaded build artifacts contain no key file, keystore or generated config | Yes | The web job uploads `build/web` and the Android job uploads the APK. Neither contains a key or keystore; the only config compiled in is the proxy URL, which is not secret. |
-| 11 | Third-party actions are pinned to a commit SHA, not a moveable tag | No | Actions are pinned to version tags (`actions/checkout@v4`, `subosito/flutter-action@v2`, `softprops/action-gh-release@v2` and others), not commit SHAs. Next step: replace each tag with its commit SHA. |
-| 12 | Secret scanning and push protection are enabled on the repository | Yes | Secret scanning and push protection are both enabled in the repo's Settings → Advanced Security → Secret Protection. Push protection for my account is also on in my account Settings → Code security. |
-
-## Backend and security rules
-
-The app has no database or accounts: all user data is stored on the
-device with `shared_preferences`. The only server is the Cloudflare
-Worker, which stores nothing and only forwards searches. Rows 13–17 are
-therefore N/A.
-
-| # | Check | Yes / No / N/A | Evidence |
-| --- | --- | --- | --- |
-| 13 | Firestore and Storage rules are not left open to anyone; they require an authenticated user | N/A | No Firebase or Supabase is used, so there are no rules to write (covers rows 13–17). |
-| 14 | Rules restrict a user to their own documents where that makes sense | N/A | No backend database and no accounts (see row 13). |
-| 15 | If Supabase: Row Level Security is on for every table | N/A | Supabase is not used (see row 13). |
-| 16 | Firebase and Google API keys are restricted in the Google Cloud console to the APIs and app they are for | N/A | The app uses no Firebase or Google API keys (see row 13). The TMDB and RAWG keys never leave the proxy. |
-| 17 | I opened the app signed out and confirmed I could not read or write data I should not | N/A | There is no sign-in and no shared data: each install only holds its own entries (see row 13). |
-| 18 | Seed and sample data is invented, not real people's data | N/A | The app has no seed or sample data. |
-
-## Input and app surface
-
-| # | Check | Yes / No / N/A | Evidence |
-| --- | --- | --- | --- |
-| 19 | Input is validated before it is written, not only styled as valid in the UI | Yes | `_save()` in `add_entry_sheet.dart` checks the trimmed title is not empty before a project or title is created. Durations and progress only change through `NumberStepper`, which clamps to its min and max, so progress can't pass a title's totals. The proxy only accepts search paths, cuts each parameter to 200 characters and caps RAWG results at 20. Not checked: title and notes length. |
-| 20 | Nothing secret is recoverable from the built app, since a shipped binary can be unpacked | Yes | The built app contains only the proxy URL, which is not secret. The API keys stay in Cloudflare and are added to requests on the proxy's side. |
-
-## Repository and privacy
-
-| # | Check | Yes / No / N/A | Evidence |
-| --- | --- | --- | --- |
-| 21 | No student number, personal email, phone number or home address in the repository or in commit messages | Yes | Every commit uses a `@users.noreply.github.com` author address (`git log --format="%an %ae %s"`). `android/local.properties` and `media_proxy/.wrangler/` are gitignored and not in the repo. |
-| 22 | No classmate's personal data in the repository | Yes | The app only stores the person's own entries and the project contains no data about anyone else. |
-| 23 | Dependencies come from pub.dev, and `build/` and `.dart_tool/` are gitignored | Yes | Runtime dependencies are google_fonts, shared_preferences, http, url_launcher and device_preview, all from pub.dev. `.gitignore` lists `.dart_tool/` and `build/`. |
-| 24 | Images, fonts and other assets are mine, licensed, or credited | Yes | Fonts are Space Grotesk and IBM Plex Sans (SIL OFL) via `google_fonts`. Search data comes from TMDB, RAWG, Open Library and AniList, credited in the README's Credits section; RAWG and TMDB are also credited in the app under their search results, as their terms require. Screenshots are my own captures. |
-| 25 | Repository visibility is deliberate, and I checked it after my last push | Yes | Public, so the instructor can view it. Opened it signed out after the push: no `.dart_tool`, `build`, `.wrangler` or `local.properties` is in the repo. |
-
-## Anything I found and fixed
-
-Filling this in caught several things. The README said the app was fully
-offline, but `google_fonts` downloads the fonts on first launch, so I
-corrected it. A corrupted stored record used to leave a screen stuck on
-its loading spinner; `ListStore.load()` now skips bad records. Adding
-media search meant handling API keys: instead of putting them in the app,
-they live as Cloudflare secrets in a proxy, and I removed the unused IGDB
-code that would have needed a Twitch client secret. An old GitHub
-secret-scanning alert was a false positive from a committed `.dart_tool`
-browser profile; `.dart_tool/` is now gitignored. Checking row 8 showed the
-first deploy ran with an empty proxy URL because I hadn't added the
-`MEDIA_PROXY_URL` secret yet, so film and game search were off on the
-website; I added the secret and re-ran the deploy. One item is still open:
-workflow actions are pinned to tags, not commit SHAs (row 11).
+MIT, see [LICENSE](LICENSE).

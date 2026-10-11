@@ -11,6 +11,8 @@ local.properties
 
 .env*
 !.env.example
+env.json
+serviceAccountKey.json
 .dev.vars*
 !.dev.vars.example
 *.keystore
@@ -30,3 +32,6 @@ media_proxy/node_modules/
 .DS_Store
 Thumbs.db
 *.log
+
+*.mov
+raw-*.mp4

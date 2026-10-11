@@ -16,7 +16,7 @@ Future<void> main() async {
   await ThemeController.instance.load();
   runApp(
     DevicePreview(
-      enabled: !kReleaseMode,
+      enabled: kIsWeb,
       builder: (context) => const TrivetApp(),
     ),
   );

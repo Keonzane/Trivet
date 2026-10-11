@@ -9,130 +9,131 @@ I kept or changed, where it went wrong, and which part is my own.
 
 Repository: https://github.com/Keonzane/Trivet
 
-## How I used AI
+## 1. How I used AI
 
-### 1. Building the first version of the app
-- Date and tool: 2026-09-28, Claude
-- What I asked for: to build Trivet from my mockup, design system and
+### 2026-09-28 - Building the first version of the app
+- **Tool:** Claude
+- **What I asked for:** to build Trivet from my mockup, design system and
   proposal PDFs, starting from day 8 of my 20-day plan, plus the week 1
   README and report.
-- What it gave back: the models, a shared_preferences storage layer, the
+- **What it gave back:** the models, a shared_preferences storage layer, the
   four tabs (Dashboard, Work, Health, Leisure), the add-entry sheet, and a
   theme using my colours and fonts.
-- What I kept, changed, and why: I kept the structure. I asked it to remove
+- **What I kept, changed, and why:** I kept the structure. I asked it to remove
   the hard-coded sample entries, because they hid what the app looks like
   for a new user, and to build the Leisure screen next.
-- Commit: https://github.com/Keonzane/Trivet/commit/6523181
+- **Commit:** https://github.com/Keonzane/Trivet/commit/6523181
 
-### 2. The triangle chart and the Dashboard
-- Date and tool: 2026-09-30, Claude
-- What I asked for: the next days of my plan, including the Dashboard
+### 2026-09-30 - The triangle chart and the Dashboard
+- **Tool:** Claude
+- **What I asked for:** the next days of my plan, including the Dashboard
   triangle from my mockup.
-- What it gave back: `trivet_mark.dart` (the triangle chart drawn with
+- **What it gave back:** `trivet_mark.dart` (the triangle chart drawn with
   CustomPaint), Dashboard changes, and safer loading in `ListStore` so one
   broken record no longer stops a whole list from loading.
-- What I kept, changed, and why: I kept it all and checked the triangle
+- **What I kept, changed, and why:** I kept it all and checked the triangle
   against my mockup.
-- Commit: https://github.com/Keonzane/Trivet/commit/1b1a26b
+- **Commit:** https://github.com/Keonzane/Trivet/commit/1b1a26b
 
-### 3. New leisure titles start as "Want"
-- Date and tool: 2026-10-01, Claude
-- What I asked for: to make "Want" the default for new leisure entries and
+### 2026-10-01 - New leisure titles start as "Want"
+- **Tool:** Claude
+- **What I asked for:** to make "Want" the default for new leisure entries and
   the default filter.
-- What it gave back: a one-line change in the add-entry sheet.
-- What I kept, changed, and why: I asked for this after testing. A title
+- **What it gave back:** a one-line change in the add-entry sheet.
+- **What I kept, changed, and why:** I asked for this after testing. A title
   you just added is one you haven't started, so "In progress" was wrong.
-- Commit: https://github.com/Keonzane/Trivet/commit/afba6da
+- **Commit:** https://github.com/Keonzane/Trivet/commit/afba6da
 
-### 4. Swipe to delete
-- Date and tool: 2026-10-03, Claude
-- What I asked for: a way to delete projects, workouts and media.
-- What it gave back: `DismissibleRow`, swipe-left-to-delete with a
+### 2026-10-03 - Swipe to delete
+- **Tool:** Claude
+- **What I asked for:** a way to delete projects, workouts and media.
+- **What it gave back:** `DismissibleRow`, swipe-left-to-delete with a
   confirmation dialog, used on all three tabs.
-- What I kept, changed, and why: I kept it. Delete stays out of the way of
+- **What I kept, changed, and why:** I kept it. Delete stays out of the way of
   the tap that opens an entry. The trade-off is that it is easy to miss,
   which I noted in my README.
-- Commit: https://github.com/Keonzane/Trivet/commit/80954b0
+- **Commit:** https://github.com/Keonzane/Trivet/commit/80954b0
 
-### 5. Making the screens match my mockup
-- Date and tool: 2026-10-04, Claude
-- What I asked for: the detail screens from my mockup: project status,
+### 2026-10-04 - Making the screens match my mockup
+- **Tool:** Claude
+- **What I asked for:** the detail screens from my mockup: project status,
   notes and date on Work; push, pull, legs and cardio with a checklist and
   upcoming sessions on Health; pages, seasons and episodes on Leisure.
-- What it gave back: `project_detail_screen.dart`, `workout_row.dart`, the
+- **What it gave back:** `project_detail_screen.dart`, `workout_row.dart`, the
   per-type media detail screen, and new model fields.
-- What I kept, changed, and why: I kept most of it, then sent screenshots
+- **What I kept, changed, and why:** I kept most of it, then sent screenshots
   where it did not match my mockup and asked for fixes (next entry).
-- Commit: https://github.com/Keonzane/Trivet/commit/0218c26
+- **Commit:** https://github.com/Keonzane/Trivet/commit/0218c26
 
-### 6. Dark mode, stat cards and "See all workouts"
-- Date and tool: 2026-10-04, Claude
-- What I asked for: stat cards and segment buttons that look exactly like
+### 2026-10-04 - Dark mode, stat cards and "See all workouts"
+- **Tool:** Claude
+- **What I asked for:** stat cards and segment buttons that look exactly like
   my mockup, a dark mode toggle at the top right, and a button to see all
   workouts.
-- What it gave back: `ThemeController` (saves light or dark), the
+- **What it gave back:** `ThemeController` (saves light or dark), the
   `ScreenHeader` with the toggle, a new `StatCard`, and
   `all_workouts_screen.dart`.
-- What I kept, changed, and why: I kept them and compared each screen with
+- **What I kept, changed, and why:** I kept them and compared each screen with
   my mockup.
-- Commit: https://github.com/Keonzane/Trivet/commit/b5d3acc
+- **Commit:** https://github.com/Keonzane/Trivet/commit/b5d3acc
 
-### 7. Typeable hours and minutes
-- Date and tool: 2026-10-04, Claude
-- What I asked for: the duration picker to step by 1, accept typing, and
+### 2026-10-04 - Typeable hours and minutes
+- **Tool:** Claude
+- **What I asked for:** the duration picker to step by 1, accept typing, and
   show hours and minutes on one line.
-- What it gave back: `NumberStepper` and a rebuilt `DurationStepper`.
-- What I kept, changed, and why: I kept it. The old picker took too many
+- **What it gave back:** `NumberStepper` and a rebuilt `DurationStepper`.
+- **What I kept, changed, and why:** I kept it. The old picker took too many
   taps to enter a long session.
-- Commit: https://github.com/Keonzane/Trivet/commit/565d05f
+- **Commit:** https://github.com/Keonzane/Trivet/commit/565d05f
 
-### 8. Leisure detail per type and one-page sections
-- Date and tool: 2026-10-05, Claude
-- What I asked for: a different detail form per media type and status, and
+### 2026-10-05 - Leisure detail per type and one-page sections
+- **Tool:** Claude
+- **What I asked for:** a different detail form per media type and status, and
   the Want / In progress / Done lists on one scrolling page.
-- What it gave back: the redesigned media detail screen and
+- **What it gave back:** the redesigned media detail screen and
   `SectionedList`, a list whose top bar jumps to a section and follows your
   scrolling.
-- What I kept, changed, and why: I kept it. Afterwards I asked for books to
+- **What I kept, changed, and why:** I kept it. Afterwards I asked for books to
   show pages and series to show season and episode on the card.
-- Commit: https://github.com/Keonzane/Trivet/commit/9c3ec6f
+- **Commit:** https://github.com/Keonzane/Trivet/commit/9c3ec6f
 
-### 9. Due dates on Work, and the Dashboard lists
-- Date and tool: 2026-10-07, Claude
-- What I asked for: a due date on projects instead of "Personal" and "last
+### 2026-10-07 - Due dates on Work, and the Dashboard lists
+- **Tool:** Claude
+- **What I asked for:** a due date on projects instead of "Personal" and "last
   logged", no date on "Log hours", and Today's workouts, Active work and
   Done this week on the Dashboard.
-- What it gave back: `dueDate` on `Project`, a `DateField` that can be set
+- **What it gave back:** `dueDate` on `Project`, a `DateField` that can be set
   to "None", and the new Dashboard sections.
-- What I kept, changed, and why: I kept them. Asked afterwards for the
+- **What I kept, changed, and why:** I kept them. Asked afterwards for the
   green edge on workout rows so they match the other cards.
-- Commits: https://github.com/Keonzane/Trivet/commit/cc1a154 and
+- **Commits:** https://github.com/Keonzane/Trivet/commit/cc1a154 and
   https://github.com/Keonzane/Trivet/commit/f12ecb3
 
-### 10. Removing dead code and merging duplicates
-- Date and tool: 2026-10-06 to 2026-10-08, Claude
-- What I asked for: to remove dead code and combine anything that could be
+### 2026-10-06 to 2026-10-08 - Removing dead code and merging duplicates
+- **Tool:** Claude
+- **What I asked for:** to remove dead code and combine anything that could be
   combined, so the code is shorter.
-- What it gave back: shared widgets (`Section`, `ChoiceBar`,
+- **What it gave back:** shared widgets (`Section`, `ChoiceBar`,
   `DetailScaffold`, `Caption`), `put` and `removeWhere` on `ListStore`, and
   fixes it found on the way.
-- What I kept, changed, and why: I kept it and asked what was removed
+- **What I kept, changed, and why:** I kept it and asked what was removed
   before accepting it.
-- Commits: https://github.com/Keonzane/Trivet/commit/342c242,
+- **Commits:** https://github.com/Keonzane/Trivet/commit/342c242,
   https://github.com/Keonzane/Trivet/commit/fd42c3b and
   https://github.com/Keonzane/Trivet/commit/639378e
 
-### 11. The search proxy, setup docs and deploy workflow
-- Date and tool: 2026-10-09, Claude, in the Claude app
-- What I asked for: a way to use TMDB and RAWG from my media search
+### 2026-10-09 - The search proxy, setup docs and deploy workflow
+- **Tool:** Claude, in the Claude app
+- **What I asked for:** a way to use TMDB and RAWG from my media search
   without putting their API keys in the app, plus a way to publish the app
   from GitHub.
-- What it gave back: a Cloudflare Worker in `media_proxy/` that holds the
-  TMDB and RAWG keys as secrets and only forwards search requests, the
-  setup docs (`MEDIA_SEARCH_SETUP.md`, `DEPLOY.md`, `START_HERE.md`), the
-  `setup.bat` and `run.bat` scripts, and a GitHub Actions workflow that
-  builds the website and an APK.
-- What I kept, changed, and why: I kept the proxy and the workflow. I
+- **What it gave back:** a Cloudflare Worker in `media_proxy/` that holds the
+  TMDB and RAWG keys as secrets and only forwards search requests, the setup
+  docs (`MEDIA_SEARCH_SETUP.md` and `DEPLOY.md`, now
+  `docs/media-search-setup.md` and `docs/deploy.md`, plus `START_HERE.md`),
+  the `setup.bat` and `run.bat` scripts, and a GitHub Actions workflow that builds the website
+  and an APK.
+- **What I kept, changed, and why:** I kept the proxy and the workflow. I
   removed the IGDB parts from the proxy and the setup doc. IGDB needs a
   Twitch developer account, and I couldn't finish its 2FA setup; I would
   have had to wait a day or two to try again and didn't have the time. I
@@ -142,84 +143,83 @@ Repository: https://github.com/Keonzane/Trivet
   are off for anyone who clones the repo. I later removed `setup.bat`,
   `tool/patch_android.ps1` and `START_HERE.md`, because the platform
   folders and the Android changes they made were already committed.
-- Commit: https://github.com/Keonzane/Trivet/commit/d0cb68b
+- **Commit:** https://github.com/Keonzane/Trivet/commit/d0cb68b
 
-### 12. Undo after delete, and the TMDB credit
-- Date and tool: 2026-10-11, Claude, in the Claude app
-- What I asked for: an Undo option after swiping to delete, because a
+### 2026-10-11 - Undo after delete, and the TMDB credit
+- **Tool:** Claude, in the Claude app
+- **What I asked for:** an Undo option after swiping to delete, because a
   swipe is easy to do by accident, and the TMDB credit that TMDB's terms
   require, shown the same way as the RAWG credit.
-- What it gave back: `DismissibleRow` now shows a "Deleted" snackbar with
+- **What it gave back:** `DismissibleRow` now shows a "Deleted" snackbar with
   an Undo button instead of the confirmation dialog. Each screen's delete returns an undo function, and a new `ListStore.restore()` puts the
   deleted items back in their original order, together with their logged
   hours or time. The search suggestions now show the TMDB credit under
   film and TV results, next to the RAWG one.
-- What I kept, changed, and why: the first version kept the Undo message
+- **What I kept, changed, and why:** the first version kept the Undo message
   on screen until it was tapped. I asked for it to disappear by itself, so
   the delete becomes final after a short wait. It was set to 10 seconds,
   which felt too long, so I changed it to 5 seconds.
-- Commit: https://github.com/Keonzane/Trivet/commit/3173954
+- **Commit:** https://github.com/Keonzane/Trivet/commit/3173954
 
+## 2. Where the AI got it wrong
 
-## Where the AI got it wrong
-
-### 1. Old workouts disappeared from my stats
-- What it gave me: when it added the "done" checkbox, saved workouts with
+### Case 1 - Old workouts disappeared from my stats
+- **What it gave me:** when it added the "done" checkbox, saved workouts with
   no `done` value were read as not done (`?? false`).
-- What was wrong: every workout I had logged before the checkbox existed
+- **What was wrong:** every workout I had logged before the checkbox existed
   stopped counting, so my Health hours dropped for no reason.
-- What I did instead: I questioned the default, and the fix reads old
+- **What I did instead:** I questioned the default, and the fix reads old
   workouts as done (`?? true`), since they were logged as finished.
-- Commit: https://github.com/Keonzane/Trivet/commit/b33d133
+- **Commit:** https://github.com/Keonzane/Trivet/commit/b33d133
 
-### 2. The locked pillar picker looked broken
-- What it gave me: when adding from the Work, Health or Leisure tab, the
+### Case 2 - The locked pillar picker looked broken
+- **What it gave me:** when adding from the Work, Health or Leisure tab, the
   Work / Health / Leisure picker was locked by disabling it. Claude said
   the code was fine.
-- What was wrong: my screenshot showed the disabled picker with nothing
+- **What was wrong:** my screenshot showed the disabled picker with nothing
   selected, so it looked like no pillar was chosen.
-- What I did instead: I decided to remove the picker on those tabs and only
+- **What I did instead:** I decided to remove the picker on those tabs and only
   show it when adding from the Dashboard, where you need to choose.
-- Commit: https://github.com/Keonzane/Trivet/commit/5cd8b78
+- **Commit:** https://github.com/Keonzane/Trivet/commit/5cd8b78
 
-### 3. Notes and Review shared one field
-- What it gave me: one `notes` field used both for notes while a title is
+### Case 3 - Notes and Review shared one field
+- **What it gave me:** one `notes` field used both for notes while a title is
   in Want and for the review once it is Done.
-- What was wrong: finishing a title overwrote my notes with the review, or
+- **What was wrong:** finishing a title overwrote my notes with the review, or
   the other way round. They are different things.
-- What I did instead: I asked for them to be stored separately, so there is
+- **What I did instead:** I asked for them to be stored separately, so there is
   now a `review` field next to `notes`.
-- Commit: https://github.com/Keonzane/Trivet/commit/fd42c3b
+- **Commit:** https://github.com/Keonzane/Trivet/commit/fd42c3b
 
-### 4. The proxy kept IGDB code nobody used
-- What it gave me: a proxy with an IGDB route, Twitch token code, and
+### Case 4 - The proxy kept IGDB code nobody used
+- **What it gave me:** a proxy with an IGDB route, Twitch token code, and
   `POST` allowed on every request, plus a setup section for switching games
   to IGDB, even though games search used RAWG.
-- What was wrong: dead code that would have needed a Twitch client secret,
+- **What was wrong:** dead code that would have needed a Twitch client secret,
   and a route that accepted `POST` requests for no reason, which is more
   open than the proxy needs to be.
-- What I did instead: I removed the IGDB route, the Twitch token code and
+- **What I did instead:** I removed the IGDB route, the Twitch token code and
   the setup section, and limited the proxy to `GET` and `OPTIONS`. I did
   this before my first commit of the proxy, so the commit only shows the
   cleaned-up version.
-- Commit: https://github.com/Keonzane/Trivet/commit/d0cb68b
+- **Commit:** https://github.com/Keonzane/Trivet/commit/d0cb68b
 
-## Who wrote what
+## 3. Who wrote what
 
-### Parts I wrote myself
+### Written by me
 
 #### 1. The leisure media search
-- Files: `lib/services/media_search/` (`media_search_service.dart`,
+- **Files:** `lib/services/media_search/` (`media_search_service.dart`,
   `media_provider.dart`, `media_search_config.dart` and the TMDB, RAWG,
   Open Library and AniList providers), `lib/models/media_result.dart`, and
   the search suggestions in `lib/widgets/add_entry_sheet.dart`
-- Commit: https://github.com/Keonzane/Trivet/commit/d0cb68b
-- What it does: `media_search_service.dart` is the single entry point for
+- **Commit:** https://github.com/Keonzane/Trivet/commit/d0cb68b
+- **What it does:** `media_search_service.dart` is the single entry point for
   the leisure search. It takes what the user typed and the selected kind
   (Film, Series, Book or Game), asks every API that handles that kind, and
   returns one combined list of results. Searches shorter than 2 characters
   return nothing, so the APIs aren't called on every letter.
-- Why it is built that way: it is built around a shared interface,
+- **Why it is built that way:** it is built around a shared interface,
   `MediaProvider`, so TMDB, RAWG, Open Library and AniList are separate
   classes with the same methods and the service can treat them all the
   same way. Each API call is wrapped in a `try`/`catch` with an 8-second
@@ -231,13 +231,13 @@ Repository: https://github.com/Keonzane/Trivet
   `setupHint()` to show a "Search is off" message when none is, and
   `enrich()` after a result is picked, to fetch details the search leaves
   out (runtime, seasons, episodes) with the same timeout and `try`/`catch`.
-- Key details: `Future.wait` sends the requests to all the relevant APIs
+- **Key details:** `Future.wait` sends the requests to all the relevant APIs
   at the same time, so a Book search through Open Library and AniList
   takes only as long as the slower one, not both added together. The
   results are interleaved, the first result from each source, then the
   second from each, and so on, so no single source floods the list, and a
   `Set` of keys removes duplicates along the way.
-- The other files, in short:
+- **The other files, in short:**
   - `media_provider.dart`: the template every API class must follow. Each
     one needs a short `id` (like `tmdb`), a display `name`, the kinds it
     handles (`types`), a check for whether it's ready (`isConfigured`), and
@@ -282,32 +282,32 @@ Repository: https://github.com/Keonzane/Trivet
     choice. Editing the title after picking clears the pick.
 
 #### 2. Rating in search suggestions
-- File: `lib/widgets/add_entry_sheet.dart`
-- Commit: https://github.com/Keonzane/Trivet/commit/9277c45
-- What it does, and why it is built that way: this line adds a star rating
+- **File:** `lib/widgets/add_entry_sheet.dart`
+- **Commit:** https://github.com/Keonzane/Trivet/commit/9277c45
+- **What it does, and why it is built that way:** this line adds a star rating
   to each search suggestion, like `2021 · Film · ★ 7.8`, but only when the
   title has a rating, so titles without one don't cause an error. The
   rating is rounded to one decimal so long numbers like `7.8333` show as a
   short, easy-to-read `7.8`.
 
 #### 3. Poster on the media detail screen
-- File: `lib/screens/media_detail_screen.dart`
-- Commit: https://github.com/Keonzane/Trivet/commit/f0a8395
-- What it does, and why it is built that way: the detail screen now shows
+- **File:** `lib/screens/media_detail_screen.dart`
+- **Commit:** https://github.com/Keonzane/Trivet/commit/f0a8395
+- **What it does, and why it is built that way:** the detail screen now shows
   the title's poster at the top, but only when it has one, and if the image
   can't load, nothing is shown instead of a broken-image icon. It uses
   `contain` instead of `cover` because RAWG game images are wide while film
   and book covers are tall, and `contain` shows both fully, unlike the
   small search thumbnails, which use `cover` to fill a tiny box.
 
-### One part the AI wrote: `ListStore` in `lib/services/storage_service.dart`
+### The AI-written part I understand best: `ListStore`
 
 Claude wrote this. Below is what it does, why it is built that way, and why
 I kept it.
 
-- File: `lib/services/storage_service.dart`
-- Commit: https://github.com/Keonzane/Trivet/commit/639378e
-- What it does: `ListStore` is the part of the app that saves and loads all
+- **File:** `lib/services/storage_service.dart`
+- **Commit:** https://github.com/Keonzane/Trivet/commit/639378e
+- **What it does:** `ListStore` is the part of the app that saves and loads all
   your data on the device. Trivet has five kinds of data (projects, work
   logs, workouts, media and leisure logs), and all five use this one class.
   Each item is turned into text (JSON), and the whole list is saved under
@@ -317,13 +317,13 @@ I kept it.
   already exists, or adds it if it's new. `removeWhere()` deletes every
   item that matches a rule. That's how deleting a project also deletes all
   of its work logs.
-- Why it is built that way: all five kinds of data are saved the same way.
+- **Why it is built that way:** all five kinds of data are saved the same way.
   The only differences are the save name, how to turn the item into text
   and back, and how to find its id. So instead of writing the same code
   five times, there's one class, and each kind of data passes in its own
   differences. `shared_preferences` is enough because the app stores only
   a small amount of data on the phone, with no accounts or server.
-- Why I kept it: because there's only one class, any improvement reaches
+- **Why I kept it:** because there's only one class, any improvement reaches
   every screen at once. When skipping broken records, `put()` and
   `removeWhere()` were added to this class, every tab got them without any
   other changes.

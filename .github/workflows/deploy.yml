@@ -41,6 +41,9 @@ jobs:
 
       - run: flutter pub get
 
+      - run: flutter analyze --no-fatal-infos
+        continue-on-error: true
+
       - name: Build website
         run: >
           flutter build web --release

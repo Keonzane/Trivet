@@ -41,7 +41,8 @@ Check it (replace the URL):
     curl "https://trivet-media-proxy.you.workers.dev/rawg/api/games?search=zelda&page_size=3"
 
 ## 3. Run the app
-Put your proxy URL in `dart_defines.json`, then:
+Put your proxy URL in `dart_defines.json` (see `dart_defines.example.json`),
+then:
 
     flutter run --dart-define-from-file=dart_defines.json
 
