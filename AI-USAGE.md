@@ -273,6 +273,16 @@ Repository: https://github.com/Keonzane/Trivet
   rating is rounded to one decimal so long numbers like `7.8333` show as a
   short, easy-to-read `7.8`.
 
+#### 3. Poster on the media detail screen
+- File: `lib/screens/media_detail_screen.dart`
+- Commit: https://github.com/Keonzane/Trivet/commit/f0a8395
+- What it does, and why it is built that way: the detail screen now shows
+  the title's poster at the top, but only when it has one, and if the image
+  can't load, nothing is shown instead of a broken-image icon. It uses
+  `contain` instead of `cover` because RAWG game images are wide while film
+  and book covers are tall, and `contain` shows both fully, unlike the
+  small search thumbnails, which use `cover` to fill a tiny box.
+
 ### One part the AI wrote: `ListStore` in `lib/services/storage_service.dart`
 
 Claude wrote this. Below is what it does, why it is built that way, and why
