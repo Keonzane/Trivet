@@ -64,9 +64,14 @@ class _HealthScreenState extends State<HealthScreen> {
     await _load();
   }
 
-  Future<void> _deleteWorkout(Workout w) async {
+  Future<UndoDelete> _deleteWorkout(Workout w) async {
     setState(() => _workouts.removeWhere((x) => x.id == w.id));
+    final workouts = await _store.load();
     await _store.removeWhere((x) => x.id == w.id);
+    return () async {
+      await _store.restore(workouts, {w.id});
+      await _load();
+    };
   }
 
   int get _streakDays {
@@ -118,7 +123,6 @@ class _HealthScreenState extends State<HealthScreen> {
       return DismissibleRow(
         itemKey: ValueKey(w.id),
         title: w.label,
-        confirmMessage: 'This removes this logged session.',
         onDelete: () => _deleteWorkout(w),
         child: WorkoutRow(
           workout: w,

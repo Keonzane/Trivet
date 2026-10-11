@@ -44,9 +44,14 @@ class _AllWorkoutsScreenState extends State<AllWorkoutsScreen> {
     await _load();
   }
 
-  Future<void> _delete(Workout w) async {
+  Future<UndoDelete> _delete(Workout w) async {
     setState(() => _workouts.removeWhere((x) => x.id == w.id));
+    final workouts = await _store.load();
     await _store.removeWhere((x) => x.id == w.id);
+    return () async {
+      await _store.restore(workouts, {w.id});
+      await _load();
+    };
   }
 
   Future<void> _edit(Workout w) async {
@@ -87,7 +92,6 @@ class _AllWorkoutsScreenState extends State<AllWorkoutsScreen> {
                   DismissibleRow(
                     itemKey: ValueKey(w.id),
                     title: w.label,
-                    confirmMessage: 'This removes this logged session.',
                     onDelete: () => _delete(w),
                     child: WorkoutRow(
                       workout: w,

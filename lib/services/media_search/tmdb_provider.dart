@@ -16,6 +16,9 @@ class TmdbProvider extends MediaProvider {
   final String _proxyUrl;
 
   static const _imageBase = 'https://image.tmdb.org/t/p/w185';
+  static const creditText =
+      'This product uses the TMDB API but is not endorsed or certified by TMDB.';
+  static final creditUrl = Uri.parse('https://www.themoviedb.org');
 
   @override
   String get id => 'tmdb';

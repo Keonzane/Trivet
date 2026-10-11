@@ -1,8 +1,12 @@
 # Trivet
 
-![Built with AI](https://img.shields.io/badge/Built%20with-Claude-D97757)
+[![Made with AI](https://img.shields.io/badge/Made_with-AI_assistance-blue)](AI-USAGE.md)
 
-Built with help from Claude (Anthropic). See [AI-USAGE.md](AI-USAGE.md) for how.
+Built with heavy help from Claude (Anthropic): Claude wrote most of the
+code in `lib/`, while I designed the app and wrote the leisure media
+search, the rating in search suggestions and the poster on the detail
+screen. See [AI-USAGE.md](AI-USAGE.md) for exactly what I asked for, what I
+kept or changed, and where the AI got it wrong.
 
 ## 1. Overview
 
@@ -97,7 +101,9 @@ opens its detail screen, which changes with the status:
 Leisure time only counts toward the week once a title is started, so
 titles still in Want don't add hours.
 
-Every list supports swipe-left-to-delete, with a confirmation first.
+Every list supports swipe-left-to-delete. A "Deleted" message with an
+**Undo** button appears for 5 seconds; Undo puts the item back, together
+with its logged hours or time. After 5 seconds the delete is final.
 
 ## 5. Project structure
 
@@ -156,8 +162,9 @@ package.
 - **Film, TV and game search depend on the proxy.** If the Worker is down
   or its free limits run out, those searches return nothing; you can
   still type a title by hand.
-- **Search results store a poster URL and year**, but no screen shows the
-  poster yet.
+- **Book search depends on Open Library.** If openlibrary.org is
+  unreachable (down, or blocked on some networks), Book search only shows
+  AniList manga results.
 - **No automated tests yet.**
 
 ## AI usage
@@ -229,7 +236,7 @@ therefore N/A.
 | 21 | No student number, personal email, phone number or home address in the repository or in commit messages | Yes | Every commit uses a `@users.noreply.github.com` author address (`git log --format="%an %ae %s"`). `android/local.properties` and `media_proxy/.wrangler/` are gitignored and not in the repo. |
 | 22 | No classmate's personal data in the repository | Yes | The app only stores the person's own entries and the project contains no data about anyone else. |
 | 23 | Dependencies come from pub.dev, and `build/` and `.dart_tool/` are gitignored | Yes | Runtime dependencies are google_fonts, shared_preferences, http, url_launcher and device_preview, all from pub.dev. `.gitignore` lists `.dart_tool/` and `build/`. |
-| 24 | Images, fonts and other assets are mine, licensed, or credited | Yes | Fonts are Space Grotesk and IBM Plex Sans (SIL OFL) via `google_fonts`. Search data comes from TMDB, RAWG, Open Library and AniList, credited in the README's Credits section; RAWG is also credited in the app with the link its terms require. Screenshots are my own captures. |
+| 24 | Images, fonts and other assets are mine, licensed, or credited | Yes | Fonts are Space Grotesk and IBM Plex Sans (SIL OFL) via `google_fonts`. Search data comes from TMDB, RAWG, Open Library and AniList, credited in the README's Credits section; RAWG and TMDB are also credited in the app under their search results, as their terms require. Screenshots are my own captures. |
 | 25 | Repository visibility is deliberate, and I checked it after my last push | Yes | Public, so the instructor can view it. Opened it signed out after the push: no `.dart_tool`, `build`, `.wrangler` or `local.properties` is in the repo. |
 
 ## Anything I found and fixed

@@ -144,6 +144,21 @@ Repository: https://github.com/Keonzane/Trivet
   folders and the Android changes they made were already committed.
 - Commit: https://github.com/Keonzane/Trivet/commit/d0cb68b
 
+### 12. Undo after delete, and the TMDB credit
+- Date and tool: 2026-10-11, Claude, in the Claude app
+- What I asked for: an Undo option after swiping to delete, because a
+  swipe is easy to do by accident, and the TMDB credit that TMDB's terms
+  require, shown the same way as the RAWG credit.
+- What it gave back: `DismissibleRow` now shows a "Deleted" snackbar with
+  an Undo button for 10 seconds instead of the confirmation dialog. Each screen's delete
+  returns an undo function, and a new `ListStore.restore()` puts the
+  deleted items back in their original order, together with their logged
+  hours or time. The search suggestions now show the TMDB credit under
+  film and TV results, next to the RAWG one.
+- What I kept, changed, and why: [fill in after testing: what you kept or
+  changed, and why]
+- Commit: [link after you commit]
+
 ## Where the AI got it wrong
 
 ### 1. Old workouts disappeared from my stats

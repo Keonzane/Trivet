@@ -57,13 +57,23 @@ class _WorkScreenState extends State<WorkScreen> {
     await _load();
   }
 
-  Future<void> _deleteProject(Project p) async {
+  Future<UndoDelete> _deleteProject(Project p) async {
     setState(() {
       _projects.removeWhere((x) => x.id == p.id);
       _logs.removeWhere((l) => l.projectId == p.id);
     });
+    final projects = await _projectStore.load();
+    final logs = await _workLogStore.load();
     await _projectStore.removeWhere((x) => x.id == p.id);
     await _workLogStore.removeWhere((l) => l.projectId == p.id);
+    return () async {
+      await _projectStore.restore(projects, {p.id});
+      await _workLogStore.restore(logs, {
+        for (final l in logs)
+          if (l.projectId == p.id) l.id,
+      });
+      await _load();
+    };
   }
 
   @override
@@ -108,8 +118,6 @@ class _WorkScreenState extends State<WorkScreen> {
                             DismissibleRow(
                               itemKey: ValueKey(p.id),
                               title: p.title,
-                              confirmMessage:
-                                  'This also removes every logged hour for this project.',
                               onDelete: () => _deleteProject(p),
                               child: ProjectCard(
                                 project: p,

@@ -52,13 +52,23 @@ class _LeisureScreenState extends State<LeisureScreen> {
     await _load();
   }
 
-  Future<void> _deleteTitle(MediaEntry e) async {
+  Future<UndoDelete> _deleteTitle(MediaEntry e) async {
     setState(() {
       _entries.removeWhere((x) => x.id == e.id);
       _logs.removeWhere((l) => l.mediaId == e.id);
     });
+    final entries = await _mediaStore.load();
+    final logs = await _logStore.load();
     await _mediaStore.removeWhere((x) => x.id == e.id);
     await _logStore.removeWhere((l) => l.mediaId == e.id);
+    return () async {
+      await _mediaStore.restore(entries, {e.id});
+      await _logStore.restore(logs, {
+        for (final l in logs)
+          if (l.mediaId == e.id) l.id,
+      });
+      await _load();
+    };
   }
 
   Future<void> _openDetail(MediaEntry entry) async {
@@ -105,8 +115,6 @@ class _LeisureScreenState extends State<LeisureScreen> {
                             DismissibleRow(
                               itemKey: ValueKey(e.id),
                               title: e.title,
-                              confirmMessage:
-                                  'This also removes the time recorded for this title.',
                               onDelete: () => _deleteTitle(e),
                               child: MediaCard(
                                 entry: e,

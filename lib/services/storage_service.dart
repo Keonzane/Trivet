@@ -55,6 +55,16 @@ class ListStore<T> {
   Future<void> removeWhere(bool Function(T item) test) async {
     await save((await load())..removeWhere(test));
   }
+
+  Future<void> restore(List<T> snapshot, Set<String> ids) async {
+    final current = {for (final x in await load()) idOf(x): x};
+    await save([
+      for (final x in snapshot)
+        if (ids.contains(idOf(x)) || current.containsKey(idOf(x)))
+          current.remove(idOf(x)) ?? x,
+      ...current.values,
+    ]);
+  }
 }
 
 class ProjectStore extends ListStore<Project> {

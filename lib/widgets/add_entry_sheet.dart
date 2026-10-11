@@ -10,6 +10,7 @@ import '../models/work_log.dart';
 import '../models/workout.dart';
 import '../services/media_search/media_search_service.dart';
 import '../services/media_search/rawg_provider.dart';
+import '../services/media_search/tmdb_provider.dart';
 import '../services/storage_service.dart';
 import '../theme.dart';
 import 'app_text_field.dart';
@@ -169,7 +170,12 @@ class _AddEntrySheetState extends State<_AddEntrySheet> {
       );
     }
     if (_suggestions.isEmpty) return const SizedBox.shrink();
-    final showRawgCredit = _suggestions.any((r) => r.source == 'rawg');
+    final credits = [
+      if (_suggestions.any((r) => r.source == 'tmdb'))
+        (TmdbProvider.creditText, TmdbProvider.creditUrl),
+      if (_suggestions.any((r) => r.source == 'rawg'))
+        (RawgProvider.creditText, RawgProvider.creditUrl),
+    ];
     final list = ConstrainedBox(
       constraints: const BoxConstraints(maxHeight: 240),
       child: ListView(
@@ -198,30 +204,30 @@ class _AddEntrySheetState extends State<_AddEntrySheet> {
         ],
       ),
     );
-    if (!showRawgCredit) return list;
+    if (credits.isEmpty) return list;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: [
         list,
-        TextButton(
-          style: TextButton.styleFrom(
-            padding: EdgeInsets.zero,
-            minimumSize: const Size(0, 32),
-            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-          ),
-          onPressed: () => launchUrl(
-            RawgProvider.creditUrl,
-            mode: LaunchMode.externalApplication,
-          ),
-          child: Text(
-            RawgProvider.creditText,
-            style: theme.textTheme.bodySmall?.copyWith(
-              color: theme.colorScheme.primary,
-              decoration: TextDecoration.underline,
+        for (final (text, url) in credits)
+          TextButton(
+            style: TextButton.styleFrom(
+              padding: EdgeInsets.zero,
+              minimumSize: const Size(0, 32),
+              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              alignment: Alignment.centerLeft,
+            ),
+            onPressed: () =>
+                launchUrl(url, mode: LaunchMode.externalApplication),
+            child: Text(
+              text,
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: theme.colorScheme.primary,
+                decoration: TextDecoration.underline,
+              ),
             ),
           ),
-        ),
       ],
     );
   }

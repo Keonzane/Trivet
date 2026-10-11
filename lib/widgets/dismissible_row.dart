@@ -2,20 +2,22 @@ import 'package:flutter/material.dart';
 
 import '../theme.dart';
 
+typedef UndoDelete = Future<void> Function();
+
+const _undoWindow = Duration(seconds: 5);
+
 class DismissibleRow extends StatelessWidget {
   const DismissibleRow({
     super.key,
     required this.itemKey,
     required this.title,
-    required this.confirmMessage,
     required this.onDelete,
     required this.child,
   });
 
   final Key itemKey;
   final String title;
-  final String confirmMessage;
-  final VoidCallback onDelete;
+  final Future<UndoDelete> Function() onDelete;
   final Widget child;
 
   @override
@@ -23,12 +25,23 @@ class DismissibleRow extends StatelessWidget {
     return Dismissible(
       key: itemKey,
       direction: DismissDirection.endToStart,
-      confirmDismiss: (_) => _confirmDelete(
-        context: context,
-        title: title,
-        message: confirmMessage,
-      ),
-      onDismissed: (_) => onDelete(),
+      onDismissed: (_) async {
+        final messenger = ScaffoldMessenger.of(context);
+        final undo = await onDelete();
+        messenger.hideCurrentSnackBar();
+        final snackBar = messenger.showSnackBar(
+          SnackBar(
+            content: Text('Deleted "$title"'),
+            duration: _undoWindow,
+            action: SnackBarAction(label: 'Undo', onPressed: undo),
+          ),
+        );
+        var closed = false;
+        snackBar.closed.then((_) => closed = true);
+        Future.delayed(_undoWindow, () {
+          if (!closed) snackBar.close();
+        });
+      },
       background: Container(
         alignment: Alignment.centerRight,
         padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
@@ -44,32 +57,4 @@ class DismissibleRow extends StatelessWidget {
       child: child,
     );
   }
-}
-
-Future<bool> _confirmDelete({
-  required BuildContext context,
-  required String title,
-  required String message,
-}) async {
-  final confirmed = await showDialog<bool>(
-    context: context,
-    builder: (context) => AlertDialog(
-      title: Text('Delete "$title"?'),
-      content: Text(message),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(false),
-          child: const Text('Cancel'),
-        ),
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(true),
-          child: Text(
-            'Delete',
-            style: TextStyle(color: Theme.of(context).colorScheme.error),
-          ),
-        ),
-      ],
-    ),
-  );
-  return confirmed ?? false;
 }
